@@ -12,6 +12,7 @@ ShorkieNotes was created as a proffesional development project aimed at achievin
 It is crucial to create the following empty files in main/config:
 
 budget_history.json
+
 shopping_list.json
 
 # Statement about use of AI tools
