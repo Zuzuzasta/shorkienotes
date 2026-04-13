@@ -5,7 +5,7 @@ ShorkieNotes is a personal/home application with the following functionalities:
 - Budgeting
 - Shopping lists generation
 
-ShorkieNotes was created as a personal / professional skill development project aimed at building and developing Python programming skills.
+ShorkieNotes was created as a personal / professional skill-development project aimed at building and developing Python programming skills.
 
 ## Setup
 
@@ -15,13 +15,20 @@ budget_history.json
 
 shopping_list.json
 
+
+***
+
 # Statement about use of AI tools
 
-During the project developement the Author has used a single chat thread withing the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work, run the audit and prepare a documentation. 
+During the project developement the Author has used a single chat thread within the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work by comparing this repository against the contents of the chat, run the audit multiple times, estimate error and prepare a documentation. The Author does not claim ownership of the auditing algorithm.
 
 __The exact copies of code were slightly above 2% with guided implementations below 14%. The final Conceptual Influence Score (CIS) - a metric determining how much of the project was influenced by AI, was calculated at 9.5%.__
 
-The most recent audit results are shown below, section 5 is removed for editorial purposes but full dated audit reports are available in the AI_audit folder ([AI_audit](AI_audit/)):
+The most recent audit results are shown below, section 5 is removed for editorial purposes but full dated audit reports are available in the AI_audit folder ([AI_audit](AI_audit/)).
+
+
+***
+
 
 ## Conceptual Influence Audit — shorkienotes
 
