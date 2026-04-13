@@ -1,0 +1,8 @@
+shork/
+.vscode/
+__pycache__/
+.VSCodeCounter/
+backups/
+bank_statements/
+budget_history.json/
+shopping_list.json/
