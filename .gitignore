@@ -4,5 +4,8 @@ __pycache__/
 .VSCodeCounter/
 backups/
 bank_statements/
-budget_history.json/
-shopping_list.json/
+main/config/budget_history.json
+main/config/shopping_list.json
+entries/23_03_2026.json
+entries/24_03_2026.json
+icon/ShorkieNotesIcon.bmp
