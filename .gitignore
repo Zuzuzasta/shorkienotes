@@ -4,5 +4,6 @@ __pycache__/
 .VSCodeCounter/
 backups/
 bank_statements/
+audit/
 budget_history.json/
 shopping_list.json/
