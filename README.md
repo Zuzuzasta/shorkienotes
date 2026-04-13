@@ -16,9 +16,11 @@ shopping_list.json
 
 # Statement about use of AI tools
 
-During the project developement the Author has used a single chat thread withing the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work, run the audit and prepare a documentation. The exact copies of code were slightly above 2% with guided implementations below 14%. The final Conceptual Influence Score (CIS) - a metric determining how much of the project was influenced by AI, was calculated at 9.5%.
+During the project developement the Author has used a single chat thread withing the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work, run the audit and prepare a documentation. 
 
-The audit results are shown below:
+__The exact copies of code were slightly above 2% with guided implementations below 14%. The final Conceptual Influence Score (CIS) - a metric determining how much of the project was influenced by AI, was calculated at 9.5%.__
+
+The most recent audit results are shown below, section 5 is removed for editorial purposes but full dated audit reports are available in the AI_audit folder ([AI_audit](AI_audit/)):
 
 ## Conceptual Influence Audit — shorkienotes
 
