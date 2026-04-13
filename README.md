@@ -14,11 +14,11 @@ It is crucial to create the following empty files in main/config:
 budget_history.json
 shopping_list.json
 
-## Statement about use of AI tools
+# Statement about use of AI tools
 
 During the project developement the Author has used a single chat thread withing the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work, run the audit and prepare a documentation. The audit results are shown below:
 
-# Conceptual Influence Audit — shorkienotes
+## Conceptual Influence Audit — shorkienotes
 
 **Repository:** [Zuzuzasta/shorkienotes](https://github.com/Zuzuzasta/shorkienotes)  
 **Audit date:** 2026-04-13  
