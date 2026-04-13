@@ -5,7 +5,7 @@ ShorkieNotes is a personal/home application with the following functionalities:
 - Budgeting
 - Shopping lists generation
 
-ShorkieNotes was created as a proffesional development project aimed at achieving crucial skill that is programming in Python.
+ShorkieNotes was created as a personal / professional skill development project aimed at building and developing Python programming skills.
 
 ## Setup
 
@@ -70,7 +70,7 @@ For each concept unit, the number of lines it governs is counted. Line weight is
 
 $$ w_i = \frac{\ell_i}{\sum_j \ell_j} $$
 
-where $$ \ell_i $$ is the line count of unit $$ i $$. This anchors every concept unit to a countable, falsifiable quantity. A single-line fix cannot dominate the score regardless of conceptual importance.
+where $\ell_i$ is the line count of unit $i$. This anchors every concept unit to a countable, falsifiable quantity. A single-line fix cannot dominate the score regardless of conceptual importance.
 
 ### 2.4 Bucket Scores
 
