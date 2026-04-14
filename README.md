@@ -5,20 +5,30 @@ ShorkieNotes is a personal/home application with the following functionalities:
 - Budgeting
 - Shopping lists generation
 
-ShorkieNotes was created as a proffesional development project aimed at achieving crucial skill that is programming in Python.
+ShorkieNotes was created as a personal / professional skill-development project aimed at building and developing Python programming skills.
 
 ## Setup
 
 It is crucial to create the following empty files in main/config:
 
 budget_history.json
+
 shopping_list.json
+
+
+***
 
 # Statement about use of AI tools
 
-During the project developement the Author has used a single chat thread withing the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work, run the audit and prepare a documentation. The exact copies of code were slightly above 2% with guided implementations below 14%. The final Conceptual Influence Score (CIS) - a metric determining how much of the project was influenced by AI, was calculated at 9.5%.
+During the project developement the Author has used a single chat thread within the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work by comparing this repository against the contents of the chat, run the audit multiple times, estimate error and prepare a documentation. The Author does not claim authorship of the auditing algorithm.
 
-The audit results are shown below:
+__The exact copies of code were slightly above 2% with guided implementations below 14%. The final Conceptual Influence Score (CIS) - a metric determining how much of the project was influenced by AI, was calculated at 9.5%.__
+
+The most recent audit results are shown below, section 5 is removed for editorial purposes but full dated audit reports are available in the AI_audit folder ([AI_audit](AI_audit/)).
+
+
+***
+
 
 ## Conceptual Influence Audit — shorkienotes
 
@@ -67,7 +77,7 @@ For each concept unit, the number of lines it governs is counted. Line weight is
 
 $$ w_i = \frac{\ell_i}{\sum_j \ell_j} $$
 
-where $$ \ell_i $$ is the line count of unit $$ i $$. This anchors every concept unit to a countable, falsifiable quantity. A single-line fix cannot dominate the score regardless of conceptual importance.
+where $\ell_i$ is the line count of unit $i$. This anchors every concept unit to a countable, falsifiable quantity. A single-line fix cannot dominate the score regardless of conceptual importance.
 
 ### 2.4 Bucket Scores
 
@@ -79,7 +89,8 @@ These sum to 1 by construction. They represent the fraction of the codebase by l
 
 ### 2.5 Conceptual Influence Score (CIS)
 
-The CIS is a single weighted composite:
+The CIS is the expected influence value of a randomly selected governed line of code.
+CIS is a single weighted sum composite:
 
 $$ \text{CIS} = 1.0 \cdot S_D + 0.5 \cdot S_G + 0.2 \cdot S_P + 0.0 \cdot S_O $$
 
