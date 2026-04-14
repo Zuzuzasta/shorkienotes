@@ -11,10 +11,11 @@ from PyQt6 import QtCore as qtc
 #To have a button allowing to add instances of box from inside the GUI you need a clas that defies "what BOX can look like", but have a json that stores properties for each instance of that class. So class(QLineEdit) can have name, frequency etc.  
 
 class Box_spendings(qtw.QWidget):
-    def __init__(self, box_name, frequency, budget_class_parent, parent = None): 
+    def __init__(self, box_name, frequency, budget_class_parent, tab_root, parent = None): 
         super().__init__(parent)
 
         self.budget_class_parent = budget_class_parent
+        self.tab_root = tab_root
 
         self.box = qtw.QLineEdit()
         self.validator = qtg.QDoubleValidator(0.00,99999.99,2)
@@ -32,7 +33,8 @@ class Box_spendings(qtw.QWidget):
         self.button_submit = qtw.QPushButton("Submit value")
         self.button_submit.pressed.connect(self.submit_value_input)
         self.button_submit.setMaximumWidth(100)
-        self.button_submit.setStyleSheet(self.budget_class_parent.parent().button_formating)
+        self.button_submit.setStyleSheet(self.tab_root.button_formating)
+        
 
         self.box.returnPressed.connect(self.button_submit.click)
 
@@ -75,10 +77,11 @@ class Box_spendings(qtw.QWidget):
             parent.registered[self.box_name] = monthly_needs
 
 class Box_income(qtw.QWidget):
-    def __init__(self, box_name, budget_class_parent, parent = None): 
+    def __init__(self, box_name, budget_class_parent, tab_root, parent = None): 
         super().__init__(parent)
 
         self.budget_class_parent = budget_class_parent
+        self.tab_root = tab_root
 
         self.box = qtw.QLineEdit()
         self.validator = qtg.QDoubleValidator(0.00,99999.99,2)
@@ -96,7 +99,7 @@ class Box_income(qtw.QWidget):
         self.button_submit = qtw.QPushButton("Submit value")
         self.button_submit.pressed.connect(self.submit_value_input)
         self.button_submit.setMaximumWidth(100)
-        self.button_submit.setStyleSheet(self.budget_class_parent.parent().button_formating)
+        self.button_submit.setStyleSheet(self.tab_root.button_formating)
 
         self.box.returnPressed.connect(self.button_submit.click)
         

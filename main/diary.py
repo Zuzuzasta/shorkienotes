@@ -100,9 +100,8 @@ class Diary(qtw.QWidget):
         else:
             json_file_name_full = json_file_name + f".json"
 
-        json_file = open(os.path.join(self.entries_path, json_file_name_full), "w")
-        json.dump(new_note, json_file)
-        json_file.close()
+        with open(os.path.join(self.entries_path, json_file_name_full), "w") as json_file:
+            json.dump(new_note, json_file)
 
     def open_new(self):
         self.index_of_selected_entry = None
@@ -114,14 +113,14 @@ class Diary(qtw.QWidget):
             return
         # Get the text from QTextEdit
         edited_note = self.text_editor.toPlainText()
-        open_json = open(self.entries_folder.filePath(self.index_of_selected_entry), "w")
-        json.dump(edited_note, open_json)
-        open_json.close()
+
+        with open(self.entries_folder.filePath(self.index_of_selected_entry), "w") as open_json:
+            json.dump(edited_note, open_json)
 
     def entry_selected(self,index):
         self.index_of_selected_entry = index
         self.button_edit.setEnabled(True)
-        open_json = open(self.entries_folder.filePath(index))
-        text_from_json = json.load(open_json)
-        self.text_editor.setText(text_from_json)
-        open_json.close()
+
+        with open(self.entries_folder.filePath(index)) as open_json:
+            text_from_json = json.load(open_json)
+            self.text_editor.setText(text_from_json)

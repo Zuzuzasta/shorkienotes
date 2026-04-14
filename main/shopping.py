@@ -36,7 +36,6 @@ class Shopping(qtw.QWidget):
         self.produce_category_combo = qtw.QComboBox()
 
         self.produce_category_combo.addItems([produce_category for produce_category in self.product_database.keys()])
-            # ["Household","Drinks","Shelf Foods", "Fresh produce", "Meats and cheese", "Frozen section"]
         
         produce_add_button = qtw.QPushButton("Add produce to the database")
         produce_add_button.clicked.connect(self.add_produce_to_database_button)
@@ -49,8 +48,6 @@ class Shopping(qtw.QWidget):
 
     def add_produce_to_database_button(self):
 
-        #! ERROR: Adding ovverides the database! REPAIR IMMEDIATELY
-
         self.open_and_load_product_database()
 
         for produce_category, produce in self.product_database.items():
@@ -60,18 +57,15 @@ class Shopping(qtw.QWidget):
 
     def save_produce_to_file(self, produce_category, produce):
 
-        #! ERROR: Adding ovverides the database! REPAIR IMMEDIATELY - HERE THE DICTIONARY IS SET TO EMPTYYYYYYYYYYYYYY (i feel like we solved this isue when making the list for tree.........)
-        category_dict = {}
-        category_dict[produce_category] = produce
-        product_database_file = open(os.path.join(self.current_path, "main", "config" , "product_database.json"), "w")
-        json.dump(category_dict,product_database_file)
-        product_database_file.close()
+        self.product_database[produce_category] = produce
+
+        with open(os.path.join(self.current_path, "main", "config" , "product_database.json"), "w") as product_database_file:
+            json.dump(self.product_database,product_database_file)
     
     def open_and_load_product_database(self):
-        product_database_file = open(os.path.join(self.current_path, "main", "config" , "product_database.json"), "r")
-        self.product_database: dict = json.load(product_database_file)
-        product_database_file.close()
 
+        with open(os.path.join(self.current_path, "main", "config" , "product_database.json"), "r") as product_database_file:
+            self.product_database: dict = json.load(product_database_file)
 
     def add_produce_to_shopping_list_dialog(self):
         self.open_and_load_product_database()
@@ -146,14 +140,14 @@ class Shopping(qtw.QWidget):
         self.refresh_shopping_list_tree_view()
 
     def open_and_load_shopping_list(self):
-        shopping_list_file = open(os.path.join(self.current_path, "main", "config" , "shopping_list.json"), "r")
-        self.shopping_list: dict = json.load(shopping_list_file)
-        shopping_list_file.close()
+        with open(os.path.join(self.current_path, "main", "config" , "shopping_list.json"), "r") as shopping_list_file:
+            self.shopping_list: dict = json.load(shopping_list_file)
+
 
     def save_produce_to_shopping_list(self, dictionary_entry):
-        product_database_file = open(os.path.join(self.current_path, "main", "config" , "shopping_list.json"), "w")
-        json.dump(dictionary_entry,product_database_file)
-        product_database_file.close()    
+        with open(os.path.join(self.current_path, "main", "config" , "shopping_list.json"), "w") as shopping_list_file:
+            json.dump(dictionary_entry,shopping_list_file)
+ 
 
     # TODO: html file generator for sending as link / attachment with check boxes
 
@@ -178,10 +172,8 @@ class Shopping(qtw.QWidget):
 
     def refresh_shopping_list_tree_view(self):
         self.shopping_list_layout.removeWidget(self.shopping_tree)
-
         self.open_and_load_shopping_list()
         self.construct_shopping_list_tree_display()
-
         self.shopping_list_layout.insertWidget(1,self.shopping_tree)
 
     def generate_list_html(self):

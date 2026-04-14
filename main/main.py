@@ -49,7 +49,7 @@ class Shorkie(qtw.QMainWindow):
         self.diary_class = Diary(self)
         self.header_tabs.addTab(self.diary_class, "Diary")
 
-        self.budget_class = Budget(self)
+        self.budget_class = Budget(tab_root=self,parent=self)
         self.header_tabs.addTab(self.budget_class, "Budget")
 
         self.shopping_class = Shopping(self)

@@ -10,7 +10,7 @@ from budget_boxes import Box_income, Box_spendings
 
 #Subclassing QWidget ONLY - this will keep one MainWindow instance, and the QTabWidget will let us choose the "main widget"
 class Budget(qtw.QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, tab_root, parent=None):
         super().__init__(parent)    
 
         #The budget class will have
@@ -26,55 +26,29 @@ class Budget(qtw.QWidget):
         self.list_box_spendings = []
         self.calculated_values = {}
 
+        # This is the Shorkie window
+        self.tab_root = tab_root    
+
         # Current path
         self.current_path = qtc.QDir.currentPath()
 
         # Setup Month dropdowns
-        self.month_dropdown = qtw.QComboBox()
-        self.month_dropdown.addItems(["January","February","March","April","May","June","July","August","September","October","November","December"])
-        # self.months_dictionary = {"January" : "01",
-        #                           "February" : "02",
-        #                           "March" : "03",
-        #                           "April" : "04",
-        #                           "May" : "05",
-        #                           "June" : "06",
-        #                           "July" : "07",
-        #                           "August" : "08",
-        #                           "September" : "09",
-        #                           "October" : "10",
-        #                           "November" : "11",
-        #                           "December" : "12"}
-        
-        self.year_dropdown = qtw.QComboBox()
-        self.year_dropdown.addItems(["2026","2027"])
+        self.setup_date_dropdowns()
 
         # Setup button "Add new spending" - add to budget_config.json
-        self.button_add_budget_config = qtw.QPushButton("Add new spending category")
-        self.button_add_budget_config.setIcon(qtg.QIcon.fromTheme("list-add"))
-        self.button_add_budget_config.setMaximumWidth(200)
-        self.button_add_budget_config.setStyleSheet(parent.button_formating)
-
-        self.button_add_budget_config.pressed.connect(self.open_budget_config_window)
+        self.setup_button_add_budget_config()
 
         # Setup button "Clear All" - add to budget_config.json
-        self.button_clear_budget_config = qtw.QPushButton("Clear All")
-        self.button_clear_budget_config.setIcon(qtg.QIcon.fromTheme("list-remove"))
-        self.button_clear_budget_config.setMaximumWidth(200)
-        self.button_clear_budget_config.setStyleSheet(parent.button_formating)
-
-        self.button_clear_budget_config.pressed.connect(self.clear_all_budget_inputs)
+        self.setup_button_clear_budget_config()
         
         # Setup for main widget / layout elements for the Budget tab
-        self.budget_tab_layout_horizontal = qtw.QHBoxLayout()
-        self.inputs_column_layout = qtw.QVBoxLayout()        
-        self.inputs_column_buttons_and_results = qtw.QVBoxLayout()
-        self.inputs_column_layout_vertical_scroll = qtw.QVBoxLayout()
+        self.initiate_layouts()
 
         self.button_calculate = qtw.QPushButton("Calculate budgeting")
-        self.button_calculate.setStyleSheet(parent.button_formating)
+        self.button_calculate.setStyleSheet(self.tab_root.button_formating)
 
         self.button_submit_budgeting = qtw.QPushButton("Submit budgeting to .json")
-        self.button_submit_budgeting.setStyleSheet(parent.button_formating)
+        self.button_submit_budgeting.setStyleSheet(self.tab_root.button_formating)
 
         self.button_submit_budgeting.pressed.connect(self.submit_monthly_budgeting_to_json)
         
@@ -87,6 +61,7 @@ class Budget(qtw.QWidget):
         # Setup of relevant instances for QGroupBox for the spendings group, Box_spendings instances generated from configuration file in "self.read_budget_config_file()"
         self.spendings_group_border = qtw.QGroupBox("Spendings")
         self.spendings_group_layout_vertical = qtw.QVBoxLayout()
+
         
         # Reads budget_config.json and creates instances of Box_spendings according to the arguments in the file
         self.read_budget_config_file()
@@ -113,6 +88,35 @@ class Budget(qtw.QWidget):
 
         # Combines all the sub-widgets into the final layout
         self.setup_main_layout_budget_tab()
+
+    def initiate_layouts(self):
+        self.budget_tab_layout_horizontal = qtw.QHBoxLayout()
+        self.inputs_column_layout = qtw.QVBoxLayout()        
+        self.inputs_column_buttons_and_results = qtw.QVBoxLayout()
+        self.inputs_column_layout_vertical_scroll = qtw.QVBoxLayout()
+
+    def setup_button_clear_budget_config(self):
+        self.button_clear_budget_config = qtw.QPushButton("Clear All")
+        self.button_clear_budget_config.setIcon(qtg.QIcon.fromTheme("list-remove"))
+        self.button_clear_budget_config.setMaximumWidth(200)
+        self.button_clear_budget_config.setStyleSheet(self.tab_root.button_formating)
+
+        self.button_clear_budget_config.pressed.connect(self.clear_all_budget_inputs)
+
+    def setup_button_add_budget_config(self):
+        self.button_add_budget_config = qtw.QPushButton("Add new spending category")
+        self.button_add_budget_config.setIcon(qtg.QIcon.fromTheme("list-add"))
+        self.button_add_budget_config.setMaximumWidth(200)
+        self.button_add_budget_config.setStyleSheet(self.tab_root.button_formating)
+
+        self.button_add_budget_config.pressed.connect(self.open_budget_config_window)
+
+    def setup_date_dropdowns(self):
+        self.month_dropdown = qtw.QComboBox()
+        self.month_dropdown.addItems(["January","February","March","April","May","June","July","August","September","October","November","December"])
+        
+        self.year_dropdown = qtw.QComboBox()
+        self.year_dropdown.addItems(["2026","2027"])
 
     def clear_all_budget_inputs(self):
 
@@ -182,7 +186,6 @@ class Budget(qtw.QWidget):
         item.setExpanded(not expanded)
 
     def load_when_double_clicked(self,item,column):
-        #print(self.list_box_spendings)
         if column == 0:
             pass 
                 
@@ -257,17 +260,16 @@ class Budget(qtw.QWidget):
     def update_budget_config_json(self):
         main_path = qtc.QDir.currentPath()
 
-        budget_config_file = open(os.path.join(main_path, "budget_config.json"), "r")
-        budget_config = json.load(budget_config_file)
-        budget_config_file.close()
+        with open(os.path.join(main_path,"main","config", "budget_config.json"), "r") as budget_config_file:
+            budget_config = json.load(budget_config_file)
 
         self.chosen_frequency = self.dropdown_frequency.currentText()
         self.chosen_frequency_value, ok = self.locale().toDouble(self.chosen_frequency)
 
-        budget_config_file = open(os.path.join(main_path, "budget_config.json"), "w")  
-        budget_config.append([self.new_spending_name_input.text(),int(self.chosen_frequency_value)])
-        json.dump(budget_config,budget_config_file)
-        budget_config_file.close()
+
+        with open(os.path.join(main_path,"main","config", "budget_config.json"), "w") as budget_config_file:  
+            budget_config.append([self.new_spending_name_input.text(),int(self.chosen_frequency_value)])
+            json.dump(budget_config,budget_config_file)
 
         self.read_budget_config_file()
 
@@ -281,8 +283,8 @@ class Budget(qtw.QWidget):
         self.button_calculate.pressed.connect(self.calculate_budgeting)
 
     def setup_income_box_group(self):
-        self.box_basic_income = Box_income("Salary / Income", self, self)
-        self.box_extra_income = Box_income("Extra Income", self, self)
+        self.box_basic_income = Box_income("Salary / Income", self, self.tab_root,self)
+        self.box_extra_income = Box_income("Extra Income", self, self.tab_root,self)
 
         self.income_group_border = qtw.QGroupBox("Income")
         self.income_group_layout_vertical = qtw.QVBoxLayout()
@@ -292,7 +294,7 @@ class Budget(qtw.QWidget):
         self.income_group_border.setLayout(self.income_group_layout_vertical)
 
     def setup_savings_box_group(self):
-        self.box_savings = Box_spendings("Savings", 1, self, self) 
+        self.box_savings = Box_spendings("Savings", 1, self, self.tab_root, self) 
         self.box_savings.box.setText("5000")
         self.box_savings.check_if_registered.hide()
 
@@ -391,10 +393,11 @@ class Budget(qtw.QWidget):
         self.grid_layout_for_results.addWidget(self.remaining_label_bot,1,4)
 
     def read_budget_config_file(self):
-        main_path = qtc.QDir.currentPath()  
-        budget_config_file = open(os.path.join(main_path, "main", "config" , "budget_config.json"), "r")
-        budget_config = json.load(budget_config_file)
-        budget_config_file.close() 
+
+        main_path = qtc.QDir.currentPath()
+
+        with open(os.path.join(main_path, "main", "config" , "budget_config.json"), "r") as budget_config_file:
+            budget_config = json.load(budget_config_file) 
 
         for box in self.list_box_spendings:
             self.spendings_group_layout_vertical.removeWidget(box)
@@ -404,7 +407,8 @@ class Budget(qtw.QWidget):
         #Create instance of Box class with input from list in json file passed as arguments
         for parameter_list in budget_config:
             box_config = parameter_list
-            self.box_spendings = Box_spendings(box_config[0],box_config[1],self,self)
+
+            self.box_spendings = Box_spendings(box_config[0],box_config[1],self,self.tab_root, self)
 
             self.list_box_spendings.append(self.box_spendings)
 
@@ -465,21 +469,19 @@ class Budget(qtw.QWidget):
         self.open_and_load_budget_history()
 
         self.history_data.append(monthly_budgeting)
-        self.history_file = open(os.path.join(self.current_path,"main","config" ,"budget_history.json"), "w")
-        json.dump(self.history_data, self.history_file)
-        self.history_file.close()
+
+        with open(os.path.join(self.current_path,"main","config" ,"budget_history.json"), "w") as self.history_file:
+            json.dump(self.history_data, self.history_file)
         
         self.refresh_tree_in_budget_tab()
 
     def refresh_tree_in_budget_tab(self):
         self.budget_tab_layout_horizontal.removeWidget(self.budget_history_tree)
-        #self.budget_tab_layout_horizontal.removeItem(self.inputs_column_layout)
         self.open_and_load_budget_history()
         self.create_budget_history_tree()
-        #self.setup_main_layout_budget_tab()
         self.budget_tab_layout_horizontal.insertWidget(0, self.budget_history_tree)
 
     def open_and_load_budget_history(self):
-        self.history_file = open(os.path.join(self.current_path, "main", "config" , "budget_history.json"), "r")
-        self.history_data = json.load(self.history_file)
-        self.history_file.close()
+        with open(os.path.join(self.current_path, "main", "config" , "budget_history.json"), "r") as self.history_file:
+            self.history_data = json.load(self.history_file)
+

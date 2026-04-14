@@ -8,6 +8,11 @@
     "Household": [
         "Soap",
         "Toilet paper",
-        "Laundry detergent"
-    ]
+        "Laundry detergent",
+        "Toothpaste"
+    ],
+    "Shelf Foods":[],
+    "Fresh produce":[],
+    "Meats and cheese":[],
+    "Frozen section":[]
 }
