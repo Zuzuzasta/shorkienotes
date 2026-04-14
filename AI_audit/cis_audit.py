@@ -484,7 +484,7 @@ These sum to 1 by construction. They represent the fraction of the codebase by l
 
 ### 2.5 Conceptual Influence Score (CIS)
 
-The CIS is a single weighted composite:
+The CIS is the expected influence value of a randomly selected governed line of code. CIS is a single weighted sum composite:
 
 $$\\text{{CIS}} = 1.0 \\cdot S_D + 0.5 \\cdot S_G + 0.2 \\cdot S_P + 0.0 \\cdot S_O$$
 
