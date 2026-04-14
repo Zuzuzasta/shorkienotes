@@ -44,13 +44,11 @@ class Budget(qtw.QWidget):
         # Setup for main widget / layout elements for the Budget tab
         self.initiate_layouts()
 
-        self.button_calculate = qtw.QPushButton("Calculate budgeting")
-        self.button_calculate.setStyleSheet(self.tab_root.button_formating)
+        # Setup for button claculate budgeting
+        self.setup_button_calculate()
 
-        self.button_submit_budgeting = qtw.QPushButton("Submit budgeting to .json")
-        self.button_submit_budgeting.setStyleSheet(self.tab_root.button_formating)
-
-        self.button_submit_budgeting.pressed.connect(self.submit_monthly_budgeting_to_json)
+        # Setup for button submit budgeting to .json
+        self.setup_button_submit_budgeting()
         
         # Setup of relevant instances for Box_income and QGroupBox for the income group
         self.setup_income_box_group()  
@@ -58,11 +56,10 @@ class Budget(qtw.QWidget):
         # Setup of relevant instances for Box_spendings and QGroupBox for the savings group
         self.setup_savings_box_group()        
 
-        # Setup of relevant instances for QGroupBox for the spendings group, Box_spendings instances generated from configuration file in "self.read_budget_config_file()"
-        self.spendings_group_border = qtw.QGroupBox("Spendings")
-        self.spendings_group_layout_vertical = qtw.QVBoxLayout()
+        # Setup of relevant instances for QGroupBox for the spendings group
+        # Box_spendings instances are later generated from configuration file in "self.read_budget_config_file()"
+        self.setup_spendings_box_group()
 
-        
         # Reads budget_config.json and creates instances of Box_spendings according to the arguments in the file
         self.read_budget_config_file()
 
@@ -88,6 +85,21 @@ class Budget(qtw.QWidget):
 
         # Combines all the sub-widgets into the final layout
         self.setup_main_layout_budget_tab()
+
+    def setup_button_submit_budgeting(self):
+        self.button_submit_budgeting = qtw.QPushButton("Submit budgeting to .json")
+        self.button_submit_budgeting.setStyleSheet(self.tab_root.button_formating)
+        self.button_submit_budgeting.pressed.connect(self.submit_monthly_budgeting_to_json)
+
+    def setup_button_calculate(self):
+        self.button_calculate = qtw.QPushButton("Calculate budgeting")
+        self.button_calculate.setStyleSheet(self.tab_root.button_formating)
+        for instance in self.list_box_spendings:
+            self.button_calculate.pressed.connect(instance.submit_value_input)
+
+    def setup_spendings_box_group(self):
+        self.spendings_group_border = qtw.QGroupBox("Spendings")
+        self.spendings_group_layout_vertical = qtw.QVBoxLayout()
 
     def initiate_layouts(self):
         self.budget_tab_layout_horizontal = qtw.QHBoxLayout()
@@ -186,56 +198,41 @@ class Budget(qtw.QWidget):
         item.setExpanded(not expanded)
 
     def load_when_double_clicked(self,item,column):
-        if column == 0:
-            pass 
-                
-        elif column == 1:
-            # load just inputs to inputs fields
+
+        self.item = item
+        self.column = column
+
+        if column == 1:
+            # load just inputs to all inputs fields
             for category in range(0,item.childCount()):
-                for row in range(0,item.child(category).childCount()):                
-                    if item.child(category).child(row).text(3) == self.box_basic_income.box_descriptor.text():
-                        self.box_basic_income.box.setText(item.child(category).child(row).text(4).replace('.',','))
-                    elif item.child(category).child(row).text(3) == self.box_extra_income.box_descriptor.text():
-                        self.box_extra_income.box.setText(item.child(category).child(row).text(4).replace('.',','))
-                    elif item.child(category).child(row).text(3) == self.box_savings.box_descriptor.text():
-                        self.box_savings.box.setText(item.child(category).child(row).text(4).replace('.',','))
-                    else:
-                        for instance in self.list_box_spendings:
-                            if instance.box_descriptor.text() == item.child(category).child(row).text(3):
-                                value_to_load = float(item.child(category).child(row).text(4)) * instance.frequency
-                                instance.box.setText(str(value_to_load).replace('.',','))
+                for row in range(0,item.child(category).childCount()):
+                    self.load_specified_value(self.item.child(category).child(row))                
 
         elif column == 2:
-            # load specified section
-            for row in range(0,item.childCount()):
-                if item.child(row).text(3) == self.box_basic_income.box_descriptor.text():
-                    self.box_basic_income.box.setText(item.child(row).text(4).replace('.',','))
-                elif item.child(row).text(3) == self.box_extra_income.box_descriptor.text():
-                    self.box_extra_income.box.setText(item.child(row).text(4).replace('.',','))
-                elif item.child(row).text(3) == self.box_savings.box_descriptor.text():
-                    self.box_savings.box.setText(item.child(row).text(4).replace('.',','))
-                else:
-                    for instance in self.list_box_spendings:
-                        if instance.box_descriptor.text() == item.child(row).text(3):
-                            value_to_load = float(item.child(row).text(4)) * instance.frequency
-                            instance.box.setText(str(value_to_load).replace('.',','))
+            # load specified section into it's boxes
+            for row in range(0,self.item.childCount()):
+                self.load_specified_value(self.item.child(row))
                                        
         elif column == 3 or column == 4:
             # load specified value into it's box
-            # make sure box exists!
-            if item.text(3) == self.box_basic_income.box_descriptor.text():
-                self.box_basic_income.box.setText(item.text(4).replace('.',','))
-            elif item.text(3) == self.box_extra_income.box_descriptor.text():
-                self.box_extra_income.box.setText(item.text(4).replace('.',','))
-            elif item.text(3) == self.box_savings.box_descriptor.text():
-                self.box_savings.box.setText(item.text(4).replace('.',','))
-            else:
-                for instance in self.list_box_spendings:
-                    if instance.box_descriptor.text() == item.text(3):
-                        value_to_load = float(item.text(4)) * instance.frequency
-                        instance.box.setText(str(value_to_load).replace('.',','))
+            self.load_specified_value(self.item)
 
+    def load_specified_value(self,item):
+        if item.text(3) == self.box_basic_income.box_descriptor.text():
+            self.box_basic_income.box.setText(item.text(4).replace('.',','))
+        elif item.text(3) == self.box_extra_income.box_descriptor.text():
+            self.box_extra_income.box.setText(item.text(4).replace('.',','))
+        elif item.text(3) == self.box_savings.box_descriptor.text():
+            self.box_savings.box.setText(item.text(4).replace('.',','))
+        else:
+            for instance in self.list_box_spendings:
+                if instance.box_descriptor.text() == item.text(3):
+                    value_to_load = float(item.text(4)) * instance.frequency
+                    instance.box.setText(str(value_to_load).replace('.',','))
+
+        
     def open_budget_config_window(self):
+        # TODO refactor this function
         budget_config_window = qtw.QDialog()
         budget_config_window.setWindowTitle("Add new spending")
 
@@ -274,9 +271,6 @@ class Budget(qtw.QWidget):
         self.read_budget_config_file()
 
     def connect_submit_buttons_to_button_calculate(self):
-        for instance in self.list_box_spendings:
-            self.button_calculate.pressed.connect(instance.submit_value_input)
-
         self.button_calculate.pressed.connect(self.box_basic_income.submit_value_input)
         self.button_calculate.pressed.connect(self.box_extra_income.submit_value_input)
         self.button_calculate.pressed.connect(self.box_savings.submit_value_input)
