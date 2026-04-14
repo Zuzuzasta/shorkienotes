@@ -1,18 +1,1 @@
-{
-    "Drinks": [
-        "Hyldeblomst",
-        "Blue beer",
-        "White monster",
-        "Wine"
-    ],
-    "Household": [
-        "Soap",
-        "Toilet paper",
-        "Laundry detergent",
-        "Toothpaste"
-    ],
-    "Shelf Foods":[],
-    "Fresh produce":[],
-    "Meats and cheese":[],
-    "Frozen section":[]
-}
+{"Drinks": ["Hyldeblomst", "Blue beer", "White monster", "Wine", "Vodka"], "Household": ["Soap", "Toilet paper", "Laundry detergent", "Toothpaste"], "Shelf Foods": ["Red beans"], "Fresh produce": [], "Meats and cheese": [], "Frozen section": []}

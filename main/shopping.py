@@ -55,6 +55,8 @@ class Shopping(qtw.QWidget):
                 produce.append(self.produce_name_type_in.text())
                 self.save_produce_to_file(produce_category, produce)
 
+        self.apply_completer_to_line_edit()
+
     def save_produce_to_file(self, produce_category, produce):
 
         self.product_database[produce_category] = produce
@@ -89,16 +91,19 @@ class Shopping(qtw.QWidget):
         #? not sure if pressing enter here will also submit the popup selection or does it override that... (.activated / .popup)
         self.add_produce_type_in.returnPressed.connect(self.add_produce_to_list_button.click)
 
-        produce_list = self.generate_lit_of_produce()
-
-        produce_completer = qtw.QCompleter(produce_list)
-        produce_completer.setCaseSensitivity(qtc.Qt.CaseSensitivity.CaseInsensitive)
-        self.add_produce_type_in.setCompleter(produce_completer)
+        self.apply_completer_to_line_edit()
 
         self.add_produce_layout.addWidget(self.choose_produce_category_combo)
         self.add_produce_layout.addWidget(self.choose_produce_combo)
         self.add_produce_layout.addWidget(self.add_produce_type_in)
         self.add_produce_layout.addWidget(self.add_produce_to_list_button)
+
+    def apply_completer_to_line_edit(self):
+        produce_list = self.generate_lit_of_produce()
+
+        produce_completer = qtw.QCompleter(produce_list)
+        produce_completer.setCaseSensitivity(qtc.Qt.CaseSensitivity.CaseInsensitive)
+        self.add_produce_type_in.setCompleter(produce_completer)
 
     def setup_for_choose_produce_combo(self):
         for produce_category, produce_list in self.product_database.items():
@@ -111,7 +116,7 @@ class Shopping(qtw.QWidget):
         self.setup_for_choose_produce_combo()
         self.add_produce_layout.insertWidget(1,self.choose_produce_combo)
 
-    def generate_lit_of_produce(self):
+    def generate_lit_of_produce(self) -> list:
         self.open_and_load_product_database()
         produce_list: list = []
 
