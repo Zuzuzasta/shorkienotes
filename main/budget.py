@@ -125,7 +125,21 @@ class Budget(qtw.QWidget):
 
     def setup_date_dropdowns(self):
         self.month_dropdown = qtw.QComboBox()
-        self.month_dropdown.addItems(["January","February","March","April","May","June","July","August","September","October","November","December"])
+        self.month_dropdown.addItems([
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December"
+                ]
+            )
         
         self.year_dropdown = qtw.QComboBox()
         self.year_dropdown.addItems(["2026","2027"])
@@ -156,7 +170,14 @@ class Budget(qtw.QWidget):
         self.budget_history_tree = qtw.QTreeWidget()
         self.budget_history_tree.setMinimumWidth(500)
         self.budget_history_tree.setColumnCount(4)
-        self.budget_history_tree.setHeaderLabels(["Month", "Category", "Value category","Entry Name", "Amount"])
+        self.budget_history_tree.setHeaderLabels([
+                "Month", 
+                "Category", 
+                "Value category",
+                "Entry Name", 
+                "Amount"
+                ]
+            )
 
         self.budget_history_tree.itemClicked.connect(self.collapse_when_clicked)
         self.budget_history_tree.itemDoubleClicked.connect(self.load_when_double_clicked)
@@ -230,7 +251,6 @@ class Budget(qtw.QWidget):
                     value_to_load = float(item.text(4)) * instance.frequency
                     instance.box.setText(str(value_to_load).replace('.',','))
 
-        
     def open_budget_config_window(self):
         # TODO refactor this function
         budget_config_window = qtw.QDialog()
@@ -262,7 +282,6 @@ class Budget(qtw.QWidget):
 
         self.chosen_frequency = self.dropdown_frequency.currentText()
         self.chosen_frequency_value, ok = self.locale().toDouble(self.chosen_frequency)
-
 
         with open(os.path.join(main_path,"main","config", "budget_config.json"), "w") as budget_config_file:  
             budget_config.append([self.new_spending_name_input.text(),int(self.chosen_frequency_value)])
