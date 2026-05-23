@@ -43,12 +43,6 @@ class Budget(qtw.QWidget):
         
         # Setup for main widget / layout elements for the Budget tab
         self.initiate_layouts()
-
-        # Setup for button claculate budgeting
-        self.setup_button_calculate()
-
-        # Setup for button submit budgeting to .json
-        self.setup_button_submit_budgeting()
         
         # Setup of relevant instances for Box_income and QGroupBox for the income group
         self.setup_income_box_group()  
@@ -63,9 +57,12 @@ class Budget(qtw.QWidget):
         # Reads budget_config.json and creates instances of Box_spendings according to the arguments in the file
         self.read_budget_config_file()
 
-        # This connects the buttons submit from all the box_spendings to button calculate
-        self.connect_submit_buttons_to_button_calculate()
-        
+        # Setup for button claculate budgeting
+        self.setup_button_calculate()
+
+        # Setup for button submit budgeting to .json
+        self.setup_button_submit_budgeting()
+
         # Setup for the result display (grid layout)
         self.setup_grid_layout_budget_tab()
 
@@ -94,8 +91,11 @@ class Budget(qtw.QWidget):
     def setup_button_calculate(self):
         self.button_calculate = qtw.QPushButton("Calculate budgeting")
         self.button_calculate.setStyleSheet(self.tab_root.button_formating)
-        for instance in self.list_box_spendings:
-            self.button_calculate.pressed.connect(instance.submit_value_input)
+        
+        # This connects the buttons submit from all the box_spendings to button calculate
+        self.connect_submit_buttons_to_button_calculate()
+
+        self.button_calculate.pressed.connect(self.calculate_budgeting)
 
     def setup_spendings_box_group(self):
         self.spendings_group_border = qtw.QGroupBox("Spendings")
@@ -293,7 +293,8 @@ class Budget(qtw.QWidget):
         self.button_calculate.pressed.connect(self.box_basic_income.submit_value_input)
         self.button_calculate.pressed.connect(self.box_extra_income.submit_value_input)
         self.button_calculate.pressed.connect(self.box_savings.submit_value_input)
-        self.button_calculate.pressed.connect(self.calculate_budgeting)
+        for instance in self.list_box_spendings:
+            self.button_calculate.pressed.connect(instance.submit_value_input)
 
     def setup_income_box_group(self):
         self.box_basic_income = Box_income("Salary / Income", self, self.tab_root,self)
