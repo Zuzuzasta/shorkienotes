@@ -380,7 +380,7 @@ class Budget(qtw.QWidget):
         registered_label_top.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
         savings_label_top.setText("Amount put in savings:")
         savings_label_top.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
-        remaining_label_top.setText("Remaining amount:")
+        remaining_label_top.setText("Remaining amount: \n (total income - total spendings)")
         remaining_label_top.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
 
         self.income_label_bot.setText(f"0 DKK")
