@@ -7,6 +7,7 @@ from PyQt6 import QtWidgets as qtw
 from PyQt6 import QtGui  as qtg
 from PyQt6 import QtCore as qtc
 from budget_boxes import Box_income, Box_spendings
+from budget_plotting import Plot_area
 
 #Subclassing QWidget ONLY - this will keep one MainWindow instance, and the QTabWidget will let us choose the "main widget"
 class Budget(qtw.QWidget):
@@ -79,6 +80,9 @@ class Budget(qtw.QWidget):
         # 3 headers - month - category - values (for x in dict: key and value)
         self.open_and_load_budget_history()
         self.create_budget_history_tree() 
+
+        # Initiate graph instance
+        self.setup_graph()
 
         # Combines all the sub-widgets into the final layout
         self.setup_main_layout_budget_tab()
@@ -318,14 +322,23 @@ class Budget(qtw.QWidget):
         self.savings_group_layout_vertical.addWidget(self.box_savings)
         self.savings_group_border.setLayout(self.savings_group_layout_vertical)
 
+    def setup_graph(self):
+        self.graph = Plot_area(self,self.tab_root,self)
+    
     def setup_main_layout_budget_tab(self):
 
         # Three columns are merged here!
+
+        self.budget_main_layout = qtw.QVBoxLayout()
+
         self.budget_tab_layout_horizontal.addWidget(self.budget_history_tree)
         self.budget_tab_layout_horizontal.addLayout(self.inputs_column_layout)
-        # todo self.budget_tab_layout_horizontal.addLayout(graph)
 
-        self.setLayout(self.budget_tab_layout_horizontal)
+        self.budget_main_layout.addLayout(self.budget_tab_layout_horizontal)
+        
+        self.budget_main_layout.addWidget(self.graph)
+
+        self.setLayout(self.budget_main_layout)
 
     def setup_inputs_column(self):
         self.inputs_column_buttons_and_results.addWidget(self.button_calculate)
@@ -484,7 +497,9 @@ class Budget(qtw.QWidget):
 
         self.history_data.append(monthly_budgeting)
 
+        #Open budget_history.json as self.history_file
         with open(os.path.join(self.current_path,"main","config" ,"budget_history.json"), "w") as self.history_file:
+            # Write (dump) contents of history_data list (of dictionaries) into self.history_file and save to budget_history.json
             json.dump(self.history_data, self.history_file)
         
         self.refresh_tree_in_budget_tab()
@@ -496,6 +511,8 @@ class Budget(qtw.QWidget):
         self.budget_tab_layout_horizontal.insertWidget(0, self.budget_history_tree)
 
     def open_and_load_budget_history(self):
+        #Open budget_history.json as self.history_file
         with open(os.path.join(self.current_path, "main", "config" , "budget_history.json"), "r") as self.history_file:
+            # Create history_data list (of dictionaries) that holds contents of budget_history.json by loading from self.history_file
             self.history_data = json.load(self.history_file)
 
