@@ -6,7 +6,7 @@ import itertools
 from PyQt6 import QtWidgets as qtw
 from PyQt6 import QtGui  as qtg
 from PyQt6 import QtCore as qtc
-from budget_boxes import Box_income, Box_spendings
+from budget_boxes import Box_income, Box_spendings, Box_brutto_income
 from budget_plotting import Plot_area
 
 #Subclassing QWidget ONLY - this will keep one MainWindow instance, and the QTabWidget will let us choose the "main widget"
@@ -23,6 +23,7 @@ class Budget(qtw.QWidget):
         # Initiating variable containers
         self.spendings = {}
         self.income = {}
+        self.brutto_income = {}
         self.registered = {}
         self.list_box_spendings = []
         self.calculated_values = {}
@@ -155,6 +156,9 @@ class Budget(qtw.QWidget):
 
         self.box_basic_income.box.setText("")
         self.box_basic_income.submitted_value.setText(f"monthly")
+
+        self.box_brutto_income.box.setText("")
+        self.box_brutto_income.submitted_value.setText(f"monthly")
         
         self.box_extra_income.box.setText("")
         self.box_extra_income.submitted_value.setText(f"monthly")
@@ -255,6 +259,8 @@ class Budget(qtw.QWidget):
     def load_specified_value(self,item):
         if item.text(3) == self.box_basic_income.box_descriptor.text():
             self.box_basic_income.box.setText(item.text(4).replace('.',','))
+        elif item.text(3) == self.box_brutto_income.box_descriptor.text():
+            self.box_brutto_income.box.setText(item.text(4).replace('.',','))
         elif item.text(3) == self.box_extra_income.box_descriptor.text():
             self.box_extra_income.box.setText(item.text(4).replace('.',','))
         elif item.text(3) == self.box_savings.box_descriptor.text():
@@ -304,6 +310,7 @@ class Budget(qtw.QWidget):
         self.read_budget_config_file()
 
     def connect_submit_buttons_to_button_calculate(self):
+        self.button_calculate.pressed.connect(self.box_brutto_income.submit_value_input)
         self.button_calculate.pressed.connect(self.box_basic_income.submit_value_input)
         self.button_calculate.pressed.connect(self.box_extra_income.submit_value_input)
         self.button_calculate.pressed.connect(self.box_savings.submit_value_input)
@@ -311,12 +318,14 @@ class Budget(qtw.QWidget):
             self.button_calculate.pressed.connect(instance.submit_value_input)
 
     def setup_income_box_group(self):
+        self.box_brutto_income = Box_brutto_income("Income before tax", self, self.tab_root,self)
         self.box_basic_income = Box_income("Salary / Income", self, self.tab_root,self)
         self.box_extra_income = Box_income("Extra Income", self, self.tab_root,self)
 
         self.income_group_border = qtw.QGroupBox("Income")
         self.income_group_layout_vertical = qtw.QVBoxLayout()
 
+        self.income_group_layout_vertical.addWidget(self.box_brutto_income)
         self.income_group_layout_vertical.addWidget(self.box_basic_income)
         self.income_group_layout_vertical.addWidget(self.box_extra_income)     
         self.income_group_border.setLayout(self.income_group_layout_vertical)
@@ -356,8 +365,6 @@ class Budget(qtw.QWidget):
         self.inputs_column_layout.addWidget(self.scroll_budget)
         self.inputs_column_layout.addLayout(self.extra_buttons)
 
-
-
     def calculate_and_submit_buttons(self):
         self.inputs_column_buttons_and_results.addWidget(self.button_calculate)
         self.inputs_column_buttons_and_results.addLayout(self.grid_layout_for_results)
@@ -392,12 +399,14 @@ class Budget(qtw.QWidget):
         registered_label_top = qtw.QLabel()
         savings_label_top = qtw.QLabel()
         remaining_label_top = qtw.QLabel()
+        effective_tax_rate_top = qtw.QLabel()
 
         self.income_label_bot = qtw.QLabel()
         self.spendings_label_bot = qtw.QLabel()
         self.registered_label_bot = qtw.QLabel()
         self.savings_label_bot = qtw.QLabel()
         self.remaining_label_bot = qtw.QLabel()
+        self.effective_tax_rate_bot = qtw.QLabel()
         
         income_label_top.setText("Your total income:")
         income_label_top.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
@@ -409,6 +418,9 @@ class Budget(qtw.QWidget):
         savings_label_top.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
         remaining_label_top.setText("Remaining amount: \n (total income - total spendings)")
         remaining_label_top.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
+        effective_tax_rate_top.setText("Effective tax rate: \n (%)")
+        effective_tax_rate_top.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
+
 
         self.income_label_bot.setText(f"0 DKK")
         self.income_label_bot.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
@@ -420,22 +432,26 @@ class Budget(qtw.QWidget):
         self.savings_label_bot.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
         self.remaining_label_bot.setText(f"0 DKK")
         self.remaining_label_bot.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
+        self.effective_tax_rate_bot.setText(f"0 DKK")
+        self.effective_tax_rate_bot.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
 
+        #First data row (2 display rows)
         self.grid_layout_for_results.addWidget(income_label_top,0,0)
         self.grid_layout_for_results.addWidget(savings_label_top,0,1)
         self.grid_layout_for_results.addWidget(remaining_label_top,0,2)
-
-        self.grid_layout_for_results.addWidget(spendings_label_top,2,0)
-        self.grid_layout_for_results.addWidget(registered_label_top,2,1)
-
-
 
         self.grid_layout_for_results.addWidget(self.income_label_bot,1,0)
         self.grid_layout_for_results.addWidget(self.savings_label_bot,1,1)
         self.grid_layout_for_results.addWidget(self.remaining_label_bot,1,2)
 
-        self.grid_layout_for_results.addWidget(self.spendings_label_bot,3,0)
-        self.grid_layout_for_results.addWidget(self.registered_label_bot,3,1)
+        #Second data row (2 display rows)
+        self.grid_layout_for_results.addWidget(effective_tax_rate_top,2,0)
+        self.grid_layout_for_results.addWidget(spendings_label_top,2,1)
+        self.grid_layout_for_results.addWidget(registered_label_top,2,2)
+
+        self.grid_layout_for_results.addWidget(self.effective_tax_rate_bot,3,0)
+        self.grid_layout_for_results.addWidget(self.spendings_label_bot,3,1)
+        self.grid_layout_for_results.addWidget(self.registered_label_bot,3,2)
 
 
 
@@ -465,6 +481,7 @@ class Budget(qtw.QWidget):
 
     def calculate_budgeting(self):
         total_income = float()
+        brutto_income = float()
         total_costs = float()
         total_registered_costs = float()
 
@@ -474,10 +491,15 @@ class Budget(qtw.QWidget):
         for profit in self.income:
             total_income += float(self.income[profit])
 
+        for income in self.brutto_income:
+            brutto_income += float(self.brutto_income[income])
+
         for cost in self.registered:
             total_registered_costs += float(self.registered[cost])
 
         left_in_budget = total_income - total_costs
+
+        effective_tax_rate = (brutto_income - total_income) / (brutto_income)
 
         #Truncated values
         total_income_2f = round(total_income,2)
@@ -485,6 +507,8 @@ class Budget(qtw.QWidget):
         total_registered_costs_2f = round(total_registered_costs,2)
         savings_2f = round(self.spendings['Savings'],2)
         left_in_budget_2f = round(left_in_budget,2)
+        brutto_income_2f = round(brutto_income,2)
+        effective_tax_rate_2f  = round(effective_tax_rate,2)
 
         #Update widget display          
         self.income_label_bot.setText(f"{total_income_2f} DKK")
@@ -492,12 +516,15 @@ class Budget(qtw.QWidget):
         self.registered_label_bot.setText(f"{total_registered_costs_2f} DKK")
         self.savings_label_bot.setText(f"{savings_2f} DKK")
         self.remaining_label_bot.setText(f"{left_in_budget_2f} DKK")
+        self.effective_tax_rate_bot.setText(f"{effective_tax_rate_2f*100} %")
 
         self.calculated_values["Income"] = total_income_2f
         self.calculated_values["Spendings"] = total_costs_2f
         self.calculated_values["Registered to Betalingskort"] = total_registered_costs_2f
         self.calculated_values["Savings"] = savings_2f
         self.calculated_values["Remaining"] = left_in_budget_2f
+        self.calculated_values["Brutto Income"] = brutto_income_2f
+        self.calculated_values["Effective tax rate"] = effective_tax_rate_2f
 
 
     def submit_monthly_budgeting_to_json(self):
@@ -507,6 +534,7 @@ class Budget(qtw.QWidget):
             budget_month : {
                 "Results": self.calculated_values,
                 "Inputs" : {
+                    "Brutto Income" : self.brutto_income,
                     "Income" : self.income,
                     "Spendings" : self.spendings
                 }
