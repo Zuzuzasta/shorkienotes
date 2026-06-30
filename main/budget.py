@@ -73,6 +73,9 @@ class Budget(qtw.QWidget):
         # Setup extra buttons (add, clear, date combo box)
         self.setup_inputs_column_extra_buttons()
 
+        # Setup calculate and submit as well as results section
+        self.calculate_and_submit_buttons()
+
         # Setup Inputs column
         self.setup_inputs_column()
 
@@ -173,6 +176,13 @@ class Budget(qtw.QWidget):
     def create_budget_history_tree(self):
         self.budget_history_tree = qtw.QTreeWidget()
         self.budget_history_tree.setMinimumWidth(500)
+
+        header_properties = self.budget_history_tree.header()
+        header_properties.setSectionResizeMode(qtw.QHeaderView.ResizeMode.ResizeToContents)
+        header_properties.setStretchLastSection(False)
+        header_properties.setSectionResizeMode(4, qtw.QHeaderView.ResizeMode.Stretch)
+
+
         self.budget_history_tree.setColumnCount(4)
         self.budget_history_tree.setHeaderLabels([
                 "Month", 
@@ -333,6 +343,7 @@ class Budget(qtw.QWidget):
 
         self.budget_tab_layout_horizontal.addWidget(self.budget_history_tree)
         self.budget_tab_layout_horizontal.addLayout(self.inputs_column_layout)
+        self.budget_tab_layout_horizontal.addLayout(self.inputs_column_buttons_and_results)
 
         self.budget_main_layout.addLayout(self.budget_tab_layout_horizontal)
         
@@ -341,13 +352,16 @@ class Budget(qtw.QWidget):
         self.setLayout(self.budget_main_layout)
 
     def setup_inputs_column(self):
-        self.inputs_column_buttons_and_results.addWidget(self.button_calculate)
-        self.inputs_column_buttons_and_results.addLayout(self.grid_layout_for_results)
-        self.inputs_column_buttons_and_results.addWidget(self.button_submit_budgeting)
 
         self.inputs_column_layout.addWidget(self.scroll_budget)
         self.inputs_column_layout.addLayout(self.extra_buttons)
-        self.inputs_column_layout.addLayout(self.inputs_column_buttons_and_results)
+
+
+
+    def calculate_and_submit_buttons(self):
+        self.inputs_column_buttons_and_results.addWidget(self.button_calculate)
+        self.inputs_column_buttons_and_results.addLayout(self.grid_layout_for_results)
+        self.inputs_column_buttons_and_results.addWidget(self.button_submit_budgeting)
 
     def setup_inputs_column_extra_buttons(self):
         self.extra_buttons = qtw.QHBoxLayout()
@@ -408,16 +422,22 @@ class Budget(qtw.QWidget):
         self.remaining_label_bot.setAlignment(qtc.Qt.AlignmentFlag.AlignCenter)
 
         self.grid_layout_for_results.addWidget(income_label_top,0,0)
-        self.grid_layout_for_results.addWidget(spendings_label_top,0,1)
-        self.grid_layout_for_results.addWidget(registered_label_top,0,2)
-        self.grid_layout_for_results.addWidget(savings_label_top,0,3)
-        self.grid_layout_for_results.addWidget(remaining_label_top,0,4)
+        self.grid_layout_for_results.addWidget(savings_label_top,0,1)
+        self.grid_layout_for_results.addWidget(remaining_label_top,0,2)
+
+        self.grid_layout_for_results.addWidget(spendings_label_top,2,0)
+        self.grid_layout_for_results.addWidget(registered_label_top,2,1)
+
+
 
         self.grid_layout_for_results.addWidget(self.income_label_bot,1,0)
-        self.grid_layout_for_results.addWidget(self.spendings_label_bot,1,1)
-        self.grid_layout_for_results.addWidget(self.registered_label_bot,1,2)
-        self.grid_layout_for_results.addWidget(self.savings_label_bot,1,3)
-        self.grid_layout_for_results.addWidget(self.remaining_label_bot,1,4)
+        self.grid_layout_for_results.addWidget(self.savings_label_bot,1,1)
+        self.grid_layout_for_results.addWidget(self.remaining_label_bot,1,2)
+
+        self.grid_layout_for_results.addWidget(self.spendings_label_bot,3,0)
+        self.grid_layout_for_results.addWidget(self.registered_label_bot,3,1)
+
+
 
     def read_budget_config_file(self):
 
