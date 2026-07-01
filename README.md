@@ -39,7 +39,7 @@ Once filled in the amounts in the "Inputs" section, they can be individually sub
 - Total spendings (including savings)
 - Amount moved to the "Payments" account (account with no card that is used to link automatic payments)
 
-The can then be submitted to .json file and stored. It will then appear in the "Data tree" where it can be retrieved from by double clicking on the "Inputs" field of the relevant data entry, or on the singular spendings.
+The results can then be submitted to .json file and stored. It will then appear in the "Data tree" where it can be retrieved from by double clicking on the "Inputs" field of the relevant data entry, or on the singular spendings.
 
 <img width="562" height="627" alt="image" src="https://github.com/user-attachments/assets/35ee94a6-4ea6-4959-beb7-ac81c73d49e7" />
 
