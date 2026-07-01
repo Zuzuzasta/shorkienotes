@@ -28,11 +28,8 @@ Your task has two parts: construct the `UNITS` table and the
 
 ### Inputs you will receive
 
-1. **Repository link** — the GitHub repository to audit.
-2. **Conversation history** — the AI-assisted chat session(s) that
-   accompanied development of the code. Provide this as a link, a
-   pasted transcript, or describe which topics were discussed if the
-   full log is unavailable.
+1. **Repository link** — 
+2. **Conversation history** — Use the entire "ShorkieNotes working thread" conversation attached.
 
 ---
 
@@ -115,13 +112,22 @@ Return **only** the following Python block. No prose, no explanation,
 no markdown — just the raw Python that can be pasted into `cis_audit.py`.
 
 ```python
-# Audited repository : <repo URL>
-# Audited commit     : <full commit SHA or branch@date>
-# Conversation scope : <brief description of what conversation covered>
-# Auditor            : <AI model name and version>
-# Audit date         : <YYYY-MM-DD>
-# Total units        : <N>
-# Total lines        : <N>
+# Full updated AUDIT_METADATA to be substituted
+
+AUDIT_METADATA = {
+    "repository"             : "<owner/repo>",
+    "commit_ref"             : "<full SHA>",
+    "audited_files"          : [<list of relative paths, e.g. "main/main.py">],
+    "audited_files_line_count": [
+        ["<relative/path.py>", <number_of_lines>],
+        ...
+    ],
+    "methodology_version"    : "1.0",
+    "Auditor"                : "<model name and tool>",
+    "Audit date"             : "<YYYY-MM-DD>"
+}
+# NOTE: total_source_lines is computed automatically from audited_files_line_count.
+# Do NOT include it in the AUDIT_METADATA dict — it will be derived by the script.
 
 UNITS = [
     # ── <filename> ──────────────────────────────────────────
@@ -136,11 +142,7 @@ BORDERLINE_UNITS = {
     ...
 }
 
-# Update AUDIT_METADATA in cis_audit.py:
-# "repository"         : "<owner/repo>"
-# "commit_ref"         : "<full SHA>"
-# "audited_files"      : [<list of relative paths>]
-# "total_source_lines" : <N>
+
 ```
 
 **ID convention:** use a two-letter file prefix + integer, e.g.
