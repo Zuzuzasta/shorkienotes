@@ -41,6 +41,7 @@ import argparse
 import json
 import sys
 from datetime import datetime
+import os
 
 try:
     import numpy as np
@@ -49,14 +50,32 @@ except ImportError:
 
 # ── CONFIGURATION ─────────────────────────────────────────────────────────────
 
+
 AUDIT_METADATA = {
-    "repository": "Zuzuzasta/shorkienotes",
-    "commit_ref": "018b535d148dcbe39a5f8b27ab76ae512b232ce9",
-    "audited_files": ["main/main.py", "main/diary.py", "main/budget_boxes.py",
-                      "main/budget.py", "main/shopping.py"],
-    "total_source_lines": 482,
-    "methodology_version": "1.0",
+    "repository"              : "Zuzuzasta/shorkienotes",
+    "commit_ref"              : "7362ade2994413c34e11e70559f8d9753dbaa05b",
+    "audited_files"           : [
+        "main/main.py",
+        "main/diary.py",
+        "main/budget_boxes.py",
+        "main/budget.py",
+        "main/budget_plotting.py",
+        "main/shopping.py"
+    ],
+    "audited_files_line_count": [
+        ["main/main.py",             67],
+        ["main/diary.py",           126],
+        ["main/budget_boxes.py",    172],
+        ["main/budget.py",          566],
+        ["main/budget_plotting.py", 135],
+        ["main/shopping.py",        251],
+    ],
+    "methodology_version"     : "1.0",
+    "Auditor"                 : "Claude Sonnet 4.5 (via Perplexity AI MCP tool)",
+    "Audit date"              : "2026-07-01"
 }
+
+AUDIT_METADATA["total_source_lines"] = sum(n for _, n in AUDIT_METADATA["audited_files_line_count"])
 
 WEIGHTS         = {"D": 1.0, "G": 0.5, "P": 0.2, "O": 0.0}
 NOISE_RANGE     = (0.80, 1.20)
@@ -67,90 +86,192 @@ DEFAULT_RUNS    = 10_000
 
 UNITS = [
     # main.py
-    ("M1",  "main.py", "imports",           "from diary import Diary (fixed broken import)",                              "D", 1),
-    ("M2",  "main.py", "imports",           "Parallel from-imports for Budget and Shopping",                             "O", 2),
-    ("M3",  "main.py", "Shorkie.__init__",  "os.path.dirname(os.path.abspath(__file__)) for icon path",                 "P", 1),
-    ("M4",  "main.py", "Shorkie.__init__",  "QTabWidget as central widget with addTab for each class",                  "O", 6),
-    ("M5",  "main.py", "Shorkie.__init__",  "Tab stylesheet (QTabBar selected/unselected CSS)",                         "O", 16),
-    ("M6",  "main.py", "Shorkie.__init__",  "button_formating string stored on self for child access",                  "G", 5),
-    ("M7",  "main.py", "Shorkie.__init__",  "setGeometry for initial window placement",                                 "O", 1),
-    ("M8",  "main.py", "__main__",          "QApplication + show + sys.exit(app.exec()) boilerplate",                   "O", 5),
-    # diary.py
-    ("D1",  "diary.py", "Diary.__init__",   "QTextEdit with placeholder text",                                          "O", 3),
-    ("D2",  "diary.py", "Diary.__init__",   "index_of_selected_entry = None to track selection state",                 "O", 2),
-    ("D3",  "diary.py", "Diary.__init__",   "button_edit disabled by default, enabled on entry_selected",              "O", 4),
-    ("D4",  "diary.py", "Diary.__init__",   "setStyleSheet via parent.button_formating on all buttons",                "G", 3),
-    ("D5",  "diary.py", "Diary.__init__",   "QFileSystemModel + QListView for entries directory listing",              "O", 7),
-    ("D6",  "diary.py", "Diary.__init__",   "entries_list.clicked connected to entry_selected",                        "O", 1),
-    ("D7",  "diary.py", "Diary.__init__",   "Full layout composition (HBox/VBox nesting)",                             "O", 14),
-    ("D8",  "diary.py", "save_note",        "datetime.now() for timestamped filename generation",                      "O", 3),
-    ("D9",  "diary.py", "save_note",        "itertools.count(1) loop to find unused numbered filename",                "O", 11),
-    ("D10", "diary.py", "save_note",        "json.dump to write note text",                                             "O", 3),
-    ("D11", "diary.py", "edit_note",        "Guard: return early if index_of_selected_entry is None",                  "O", 2),
-    ("D12", "diary.py", "entry_selected",   "json.load from entries_folder.filePath(index) into QTextEdit",            "O", 5),
-    # budget_boxes.py
-    ("BB1", "budget_boxes.py", "Box_spendings.__init__", "QDoubleValidator on QLineEdit",                              "O", 4),
-    ("BB2", "budget_boxes.py", "Box_spendings.__init__", "box_descriptor + submitted_value QLabel",                    "O", 4),
-    ("BB3", "budget_boxes.py", "Box_spendings.__init__", "frequency parameter governs monthly normalisation",           "O", 2),
-    ("BB4", "budget_boxes.py", "Box_spendings.__init__", "setStyleSheet via budget_class_parent.parent().button_formating", "G", 2),
-    ("BB5", "budget_boxes.py", "Box_spendings.__init__", "returnPressed connected to button_submit.click",             "O", 1),
-    ("BB6", "budget_boxes.py", "Box_spendings.__init__", "QHBoxLayout composing all box widgets",                      "O", 7),
-    ("BB7", "budget_boxes.py", "submit_value_input",     "locale().toDouble() for locale-aware float parsing",         "O", 2),
-    ("BB8", "budget_boxes.py", "submit_value_input",     "Duck-typed parent.spendings[box_name] (no isinstance guard)","D", 3),
-    ("BB9", "budget_boxes.py", "submit_value_input",     "Registered dict update gated on QCheckBox state",            "O", 2),
-    ("BB10","budget_boxes.py", "Box_income.__init__",    "Full Box_income class mirroring Box_spendings",              "O", 30),
-    ("BB11","budget_boxes.py", "Box_income.submit_value_input", "parent.income[box_name] duck-typed",                  "D", 2),
-    # budget.py
-    ("BU1", "budget.py", "__init__",        "Instance variable containers: spendings, income, registered, list_box_spendings", "O", 5),
-    ("BU2", "budget.py", "__init__",        "current_path via QDir.currentPath()",                                     "O", 1),
-    ("BU3", "budget.py", "__init__",        "Month/Year QComboBox setup",                                              "O", 4),
-    ("BU4", "budget.py", "__init__",        "button_add_budget_config with setIcon and setMaximumWidth",               "O", 5),
-    ("BU5", "budget.py", "__init__",        "button_formating applied via parent.button_formating",                    "G", 4),
-    ("BU6", "budget.py", "__init__",        "Ordered init chain across all setup methods",                             "O", 14),
-    ("BU7", "budget.py", "read_budget_config_file", "JSON config drives Box_spendings instantiation",                  "O", 12),
-    ("BU8", "budget.py", "connect_submit_buttons",  "Loop connecting all box submit signals to button_calculate",      "O", 7),
-    ("BU9", "budget.py", "setup_income_box_group",  "QGroupBox wrapping Box_income instances",                        "O", 8),
-    ("BU10","budget.py", "setup_savings_box_group", "QGroupBox wrapping Box_spendings for savings",                   "O", 7),
-    ("BU11","budget.py", "setup_scrollable_section","QScrollArea wrapping QWidget with vertical layout",               "O", 10),
-    ("BU12","budget.py", "setup_grid_layout",       "QGridLayout for results display",                                 "O", 20),
-    ("BU13","budget.py", "calculate_budgeting",     "Arithmetic across spendings/income/registered dicts",             "O", 18),
-    ("BU14","budget.py", "submit_monthly_budgeting_to_json", "JSON append of month/year keyed entry",                  "O", 15),
-    ("BU15","budget.py", "create_budget_history_tree", "QTreeWidget with addTopLevelItem + nested addChild",           "G", 28),
-    ("BU16","budget.py", "create_budget_history_tree", "setColumnCount(4) and setHeaderLabels",                        "G", 2),
-    ("BU17","budget.py", "collapse_when_clicked",   "itemClicked toggle: isExpanded -> setExpanded(not expanded)",     "G", 3),
-    ("BU18","budget.py", "load_when_double_clicked","Column-conditional load of values back into input boxes",         "O", 35),
-    ("BU19","budget.py", "refresh_tree_in_budget_tab","removeWidget + re-add; double setLayout discussed",             "P", 6),
-    ("BU20","budget.py", "setup_main_layout_budget_tab","addWidget(tree) + addLayout(inputs) + setLayout",             "O", 5),
-    ("BU21","budget.py", "open_budget_config_window","QDialog with exec() for modal config entry",                     "O", 14),
-    ("BU22","budget.py", "update_budget_config_json","Read-modify-write pattern for JSON config append",               "O", 10),
-    ("BU23","budget.py", "clear_all_budget_inputs", "Loop over list_box_spendings to reset all widgets",               "O", 12),
+    # schema: (id, file, scope, description, label, lines_governed)
+    ("MN1",  "main/main.py", "module",            "from-import style used for Diary, Budget, Shopping to avoid module-is-not-callable error", "D", 3),
+    ("MN2",  "main/main.py", "Shorkie.__init__",  "QMainWindow subclassed as single top-level window to host all tabs", "G", 2),
+    ("MN3",  "main/main.py", "Shorkie.__init__",  "QTabWidget as central widget to switch between Diary, Budget, Shopping pages", "G", 3),
+    ("MN4",  "main/main.py", "Shorkie.__init__",  "QTabBar stylesheet with border-radius, padding, blue selected/light-blue unselected colours and bold font", "G", 14),
+    ("MN5",  "main/main.py", "Shorkie.__init__",  "button_formating string stored on Shorkie instance for child widgets to share a common QPushButton style", "O", 7),
+    ("MN6",  "main/main.py", "Shorkie.__init__",  "os.path.dirname(os.path.abspath(__file__)) to locate icon independent of working directory", "G", 1),
+    ("MN7",  "main/main.py", "Shorkie.__init__",  "setGeometry with fixed initial position and size 600,100,1000,900", "O", 1),
+    ("MN8",  "main/main.py", "__main__",           "QApplication(sys.argv) entry guard with sys.exit(app.exec()) event loop", "O", 5),
+
+    # diary.py 
+    ("DI1",  "main/diary.py", "Diary.__init__",   "QWidget subclass (not QMainWindow) so Diary embeds cleanly inside QTabWidget", "G", 2),
+    ("DI2",  "main/diary.py", "Diary.__init__",   "QTextEdit as multi-line diary input with placeholder text", "O", 2),
+    ("DI3",  "main/diary.py", "Diary.__init__",   "index_of_selected_entry instance variable initialised to None to track list selection state", "O", 2),
+    ("DI4",  "main/diary.py", "Diary.__init__",   "button_edit disabled on startup and only enabled after a list entry is clicked", "O", 4),
+    ("DI5",  "main/diary.py", "Diary.__init__",   "button_formating style string inherited from parent (Shorkie) applied to all three buttons", "O", 6),
+    ("DI6",  "main/diary.py", "Diary.__init__",   "QHBoxLayout for buttons, QVBoxLayout for text+buttons, QHBoxLayout for list+editor panels", "O", 10),
+    ("DI7",  "main/diary.py", "Diary.__init__",   "QFileSystemModel with setRootPath to back a QListView showing the entries/ directory", "O", 6),
+    ("DI8",  "main/diary.py", "Diary.__init__",   "entries_list.clicked connected to entry_selected for single-click file loading", "O", 2),
+    ("DI9",  "main/diary.py", "Diary.save_note",  "datetime.now() with zero-padded day/month/year format string to generate date-based JSON filename", "O", 4),
+    ("DI10", "main/diary.py", "Diary.save_note",  "itertools.count(1) loop to find first unused numbered suffix when same-date file already exists", "O", 8),
+    ("DI11", "main/diary.py", "Diary.save_note",  "json.dump of plain text string (not a dict) into .json file via context manager", "O", 3),
+    ("DI12", "main/diary.py", "Diary.open_new",   "open_new resets index_of_selected_entry to None and disables edit button to clear edit state", "O", 3),
+    ("DI13", "main/diary.py", "Diary.edit_note",  "early-return guard on None index before attempting file write in edit_note", "O", 2),
+    ("DI14", "main/diary.py", "Diary.edit_note",  "QFileSystemModel.filePath(index) used to resolve absolute path for overwrite save", "O", 4),
+    ("DI15", "main/diary.py", "Diary.entry_selected", "entry_selected stores QModelIndex, enables edit button, and loads JSON text into editor in one handler", "O", 6),
+
+    # budget.py 
+    ("BU1",  "main/budget.py", "Budget.__init__",  "Budget accepts tab_root and parent separately so style strings on Shorkie are reachable from child boxes", "O", 2),
+    ("BU2",  "main/budget.py", "Budget.__init__",  "spendings, income, brutto_income, registered dicts and list_box_spendings list initialised as empty containers at construction", "O", 6),
+    ("BU3",  "main/budget.py", "Budget.__init__",  "setup_* method decomposition: each UI section built in its own named method called from __init__", "O", 20),
+    ("BU4",  "main/budget.py", "Budget.setup_date_dropdowns", "QComboBox with hard-coded month names list and year list for budget period selection", "O", 16),
+    ("BU5",  "main/budget.py", "Budget.setup_button_add_budget_config", "QIcon.fromTheme('list-add') used for add-spending button icon without a custom image file", "G", 4),
+    ("BU6",  "main/budget.py", "Budget.setup_button_clear_budget_config", "QIcon.fromTheme('list-remove') used for clear button icon", "G", 3),
+    ("BU7",  "main/budget.py", "Budget.clear_all_budget_inputs", "clear_all iterates list_box_spendings to reset every dynamic box plus calls setup_submited_value_text", "O", 15),
+    ("BU8",  "main/budget.py", "Budget.create_budget_history_tree", "QTreeWidget with ResizeToContents header and Stretch on last column for auto-fit display", "G", 6),
+    ("BU9",  "main/budget.py", "Budget.create_budget_history_tree", "5-column tree: Month / Category / Value-category / Entry-Name / Amount hierarchy built from history_data list", "O", 30),
+    ("BU10", "main/budget.py", "Budget.collapse_when_clicked",  "itemClicked toggles item.setExpanded(not item.isExpanded()) to collapse/expand on single click", "G", 3),
+    ("BU11", "main/budget.py", "Budget.load_when_double_clicked", "itemDoubleClicked dispatches on column index (1=section, 2=category, 3-4=single value) to load subsets of history", "O", 12),
+    ("BU12", "main/budget.py", "Budget.load_specified_value",  "load_specified_value matches item.text(3) against box_descriptor labels to route values back to correct input box", "O", 12),
+    ("BU13", "main/budget.py", "Budget.load_specified_value",  "frequency scaling applied when loading historical spending value: value * instance.frequency before setting text", "O", 3),
+    ("BU14", "main/budget.py", "Budget.load_specified_value",  "replace('.',',') on all loaded text values to restore EU decimal display", "O", 5),
+    ("BU15", "main/budget.py", "Budget.open_budget_config_window", "QDialog used as modal popup for adding a new spending category name and frequency", "O", 13),
+    ("BU16", "main/budget.py", "Budget.update_budget_config_json", "locale().toDouble() on chosen_frequency string to parse locale-safe numeric value from QComboBox", "G", 3),
+    ("BU17", "main/budget.py", "Budget.update_budget_config_json", "budget_config.json read-modify-append-write cycle to persist new spending entry", "O", 7),
+    ("BU18", "main/budget.py", "Budget.connect_submit_buttons_to_button_calculate", "button_calculate.pressed connected to every box's submit_value_input so Calculate triggers all submissions", "G", 6),
+    ("BU19", "main/budget.py", "Budget.setup_income_box_group",  "QGroupBox wrapping Box_brutto_income and two Box_income instances for the income section", "O", 8),
+    ("BU20", "main/budget.py", "Budget.setup_savings_box_group", "Box_spendings reused for Savings with frequency=1 and check_if_registered hidden to specialise behaviour", "O", 6),
+    ("BU21", "main/budget.py", "Budget.setup_graph",             "Plot_area instantiated and stored as self.graph, wired via parent reference", "O", 2),
+    ("BU22", "main/budget.py", "Budget.setup_main_layout_budget_tab", "Three-column layout: history tree | scrollable inputs | results+buttons, plus graph below", "O", 10),
+    ("BU23", "main/budget.py", "Budget.setup_scrollable_section_inputs_column", "QScrollArea wrapping a QWidget container for income/savings/spendings groups, always-on vertical scrollbar", "G", 9),
+    ("BU24", "main/budget.py", "Budget.setup_grid_layout_budget_tab", "QGridLayout with 2×3 rows of label pairs (top description / bottom value) for results display", "O", 35),
+    ("BU25", "main/budget.py", "Budget.read_budget_config_file", "setParent(None) loop to detach old Box_spendings widgets before rebuilding from JSON", "G", 5),
+    ("BU26", "main/budget.py", "Budget.read_budget_config_file", "list_box_spendings.clear() called after setParent(None) loop to keep Python list in sync with Qt widget tree", "G", 1),
+    ("BU27", "main/budget.py", "Budget.read_budget_config_file", "budget_config.json parsed as list-of-lists; each sub-list [name, frequency] instantiates one Box_spendings", "G", 8),
+    ("BU28", "main/budget.py", "Budget.calculate_budgeting",     "effective_tax_rate computed as (brutto - netto) / brutto from separate brutto_income dict", "O", 3),
+    ("BU29", "main/budget.py", "Budget.calculate_budgeting",     "round(x, 2) applied to all financial results before display and storage", "O", 7),
+    ("BU30", "main/budget.py", "Budget.calculate_budgeting",     "calculated_values dict populated for later JSON submission, keyed by human-readable strings", "O", 7),
+    ("BU31", "main/budget.py", "Budget.submit_monthly_budgeting_to_json", "budget_month key constructed as Month_YYYY string from two QComboBox values", "O", 3),
+    ("BU32", "main/budget.py", "Budget.submit_monthly_budgeting_to_json", "monthly_budgeting nested dict with Results and Inputs sub-dicts appended to history_data list", "O", 12),
+    ("BU33", "main/budget.py", "Budget.refresh_tree_in_budget_tab", "removeWidget + insertWidget(0, ...) pattern to replace tree in left column without rebuilding the full layout", "G", 5),
+    ("BU34", "main/budget.py", "Budget.open_and_load_budget_history", "json.load from budget_history.json into self.history_data list via context manager", "O", 4),
+
+    # budget_boxes.py 
+    ("BB1",  "main/budget_boxes.py", "Box_spendings.__init__", "QDoubleValidator(0.00, 99999.99, 2) attached to QLineEdit for numeric range enforcement", "G", 3),
+    ("BB2",  "main/budget_boxes.py", "Box_spendings.__init__", "box.setMaximumWidth(100) and box_descriptor.setMaximumWidth(100) to constrain column widths", "O", 2),
+    ("BB3",  "main/budget_boxes.py", "Box_spendings.__init__", "frequency instance attribute stored on Box_spendings to support multi-month spending periods", "O", 2),
+    ("BB4",  "main/budget_boxes.py", "Box_spendings.__init__", "QCheckBox('Registered?') for marking spending as auto-payment/Betalingskort", "O", 2),
+    ("BB5",  "main/budget_boxes.py", "Box_spendings.__init__", "box.returnPressed connected to button_submit.click so Enter key submits without clicking", "O", 2),
+    ("BB6",  "main/budget_boxes.py", "Box_spendings.__init__", "QHBoxLayout assembling descriptor, input, submit button, checkbox, and submitted_value label", "O", 7),
+    ("BB7",  "main/budget_boxes.py", "Box_spendings.setup_submited_value_text", "conditional label text: 'monthly' for frequency==1, '/ N months' otherwise", "O", 4),
+    ("BB8",  "main/budget_boxes.py", "Box_spendings.submit_value_input", "validator.locale().toDouble(value_input) to parse EU comma-decimal string into Python float", "G", 2),
+    ("BB9",  "main/budget_boxes.py", "Box_spendings.submit_value_input", "monthly_needs = value / frequency to normalise multi-period spendings to monthly equivalent", "O", 2),
+    ("BB10", "main/budget_boxes.py", "Box_spendings.submit_value_input", "submitted_value label updated with replace('.',',') to keep EU decimal display after conversion", "O", 4),
+    ("BB11", "main/budget_boxes.py", "Box_spendings.submit_value_input", "duck-typed parent.spendings[box_name] assignment with no isinstance guard to avoid circular import", "D", 3),
+    ("BB12", "main/budget_boxes.py", "Box_spendings.submit_value_input", "conditional parent.registered[box_name] write only when check_if_registered is checked", "O", 3),
+    ("BB13", "main/budget_boxes.py", "Box_income.__init__",    "Box_income as separate class from Box_spendings omitting frequency and checkbox for simpler income entry", "O", 20),
+    ("BB14", "main/budget_boxes.py", "Box_income.submit_value_input", "locale().toDouble pattern identical to Box_spendings for locale-safe float parsing in income box", "G", 2),
+    ("BB15", "main/budget_boxes.py", "Box_income.submit_value_input", "duck-typed parent.income[box_name] assignment mirroring Box_spendings duck-typing pattern", "D", 2),
+    ("BB16", "main/budget_boxes.py", "Box_brutto_income.__init__", "Box_brutto_income as third distinct class for pre-tax income, structurally identical to Box_income", "O", 20),
+    ("BB17", "main/budget_boxes.py", "Box_brutto_income.submit_value_input", "duck-typed parent.brutto_income[box_name] assignment for gross-income tracking", "D", 2),
+
+    # budget_plotting.py 
+    ("BP1",  "main/budget_plotting.py", "Plot_area.__init__",  "pyqtgraph PlotWidget chosen over matplotlib for native Qt integration without canvas embedding", "O", 2),
+    ("BP2",  "main/budget_plotting.py", "Plot_area.__init__",  "parent.open_and_load_budget_history() called on the Budget parent to reuse its JSON loading method", "O", 2),
+    ("BP3",  "main/budget_plotting.py", "Plot_area.__init__",  "month_year list built by iterating parent.history_data keys to extract x-axis labels", "O", 6),
+    ("BP4",  "main/budget_plotting.py", "Plot_area.__init__",  "string month names extracted by replacing last 5 chars (_YYYY) with empty string", "O", 3),
+    ("BP5",  "main/budget_plotting.py", "Plot_area.__init__",  "dict(enumerate(x_axis_month)) used to create integer-keyed dictionary for pg AxisItem tick mapping", "O", 2),
+    ("BP6",  "main/budget_plotting.py", "Plot_area.__init__",  "pg.AxisItem(orientation='bottom') with setTicks for custom string x-axis month labels", "O", 3),
+    ("BP7",  "main/budget_plotting.py", "Plot_area.__init__",  "plot_graph.setBackground(None) for transparent background matching application theme", "O", 2),
+    ("BP8",  "main/budget_plotting.py", "Plot_area.__init__",  "HTML span with inline CSS used inside setLabel calls for axis label font size and colour", "O", 3),
+    ("BP9",  "main/budget_plotting.py", "Plot_area.__init__",  "pg.GraphicsLayoutWidget as separate legend container with addItem loop over listDataItems()", "O", 8),
+    ("BP10", "main/budget_plotting.py", "Plot_area.__init__",  "legend_widget.setMaximumWidth(200) to constrain legend column width", "O", 1),
+    ("BP11", "main/budget_plotting.py", "Plot_area.__init__",  "pg.mkPen(color=RGB_tuple, width=5) per data series for distinct coloured lines", "O", 9),
+    ("BP12", "main/budget_plotting.py", "Plot_area.__init__",  "cost_of_living computed as spendings - savings; cost_of_living_index as income / cost_of_living derived metrics", "O", 4),
+    ("BP13", "main/budget_plotting.py", "Plot_area.__init__",  "QHBoxLayout with legend_widget on left and plot_graph on right as Plot_area widget layout", "O", 5),
+    ("BP14", "main/budget_plotting.py", "Plot_area.plot_line", "plot_line helper method encapsulates plot_graph.plot call with name, pen, x and y arguments", "O", 6),
+
     # shopping.py
-    ("SH1", "shopping.py", "add_produce_to_database_dialog",       "QHBoxLayout with LineEdit+ComboBox+Button for DB add", "O", 10),
-    ("SH2", "shopping.py", "add_produce_to_database_button",       "Read-append-write JSON pattern for product DB",   "O", 6),
-    ("SH3", "shopping.py", "save_produce_to_file",                 "json.dump category dict to product_database.json","O", 5),
-    ("SH4", "shopping.py", "add_produce_to_shopping_list_dialog",  "QCompleter on QLineEdit fed from flattened list", "O", 12),
-    ("SH5", "shopping.py", "add_produce_to_shopping_list_dialog",  "category combo linked to produce combo via currentIndexChanged", "O", 5),
-    ("SH6", "shopping.py", "choose_produce_combo_refresh",         "clear+removeWidget+setup+insertWidget for combo refresh", "G", 5),
-    ("SH7", "shopping.py", "appending_produce_to_shopping_list_button", "Category lookup + append + save + refresh chain", "O", 12),
-    ("SH8", "shopping.py", "construct_shopping_list_tree_display", "QTreeWidget category top-level + produce children + expandAll", "G", 14),
-    ("SH9", "shopping.py", "refresh_shopping_list_tree_view",      "removeWidget + reconstruct + insertWidget(1,...)", "D", 5),
-    ("SH10","shopping.py", "shopping_tab_layout",                  "Two-column QHBoxLayout: inputs VBox + tree VBox", "O", 9),
+    ("SH1",  "main/shopping.py", "Shopping.__init__",  "Shopping.__init__ delegates UI construction to four named setup methods for readability", "O", 5),
+    ("SH2",  "main/shopping.py", "Shopping.add_produce_to_database_dialog", "QGroupBox with setMaximumHeight(100) to constrain the add-to-database section height", "O", 4),
+    ("SH3",  "main/shopping.py", "Shopping.add_produce_to_database_dialog", "QComboBox populated from product_database.keys() for category selection when adding produce", "O", 3),
+    ("SH4",  "main/shopping.py", "Shopping.add_produce_to_database_dialog", "produce_name_type_in.returnPressed connected to produce_add_button.click for keyboard-only entry", "O", 2),
+    ("SH5",  "main/shopping.py", "Shopping.add_produce_to_database_button", "open_and_load_product_database() called at button-press time to ensure fresh data before mutation", "O", 2),
+    ("SH6",  "main/shopping.py", "Shopping.add_produce_to_database_button", "loop over product_database items to find matching category then append produce and save", "O", 5),
+    ("SH7",  "main/shopping.py", "Shopping.save_produce_to_file",  "product_database dict mutated then dumped wholesale to product_database.json via json.dump", "O", 4),
+    ("SH8",  "main/shopping.py", "Shopping.open_and_load_product_database", "product_database loaded into self.product_database on every call to reflect current disk state", "O", 3),
+    ("SH9",  "main/shopping.py", "Shopping.add_produce_to_shopping_list_dialog", "QLabel('<< OR >>') with font-size 20pt and AlignCenter to visually separate two add-methods", "O", 6),
+    ("SH10", "main/shopping.py", "Shopping.setup_produce_combo",  "choose_produce_category_combo.currentIndexChanged connected to choose_produce_combo_refresh for cascading dropdowns", "O", 3),
+    ("SH11", "main/shopping.py", "Shopping.setup_produce_combo",  "choose_produce_combo populated from product_database values filtered by selected category", "O", 5),
+    ("SH12", "main/shopping.py", "Shopping.setup_produce_type_in", "QCompleter applied to add_produce_type_in with CaseInsensitive matching for autocomplete from full product list", "O", 5),
+    ("SH13", "main/shopping.py", "Shopping.setup_produce_type_in", "add_produce_type_in.returnPressed connected to add button click for keyboard-only workflow", "O", 2),
+    ("SH14", "main/shopping.py", "Shopping.apply_completer_to_line_edit", "generate_lit_of_produce() flattens all category lists into one list used as QCompleter source model", "O", 4),
+    ("SH15", "main/shopping.py", "Shopping.choose_produce_combo_refresh", "combo.clear() then removeWidget/insertWidget(1,...) to replace combo in-place without rebuilding layout", "O", 5),
+    ("SH16", "main/shopping.py", "Shopping.generate_lit_of_produce", "starred-expression list unpacking [*produce_list, *produce] to flatten category lists iteratively", "O", 5),
+    ("SH17", "main/shopping.py", "Shopping.appending_typed_produce_to_shopping_list_button", "database lookup loop to find category of typed produce before appending to shopping_list", "O", 10),
+    ("SH18", "main/shopping.py", "Shopping.appending_typed_produce_to_shopping_list_button", "conditional list creation: new empty list if category not yet in shopping_list keys, else load existing", "O", 4),
+    ("SH19", "main/shopping.py", "Shopping.appending_combo_produce_to_shopping_list_button", "combo-based add uses currentText() directly without database lookup since category is already known", "O", 10),
+    ("SH20", "main/shopping.py", "Shopping.open_and_load_shopping_list", "shopping_list.json loaded into self.shopping_list dict on each call, separate from product_database", "O", 3),
+    ("SH21", "main/shopping.py", "Shopping.save_produce_to_shopping_list", "shopping list dict dumped wholesale to shopping_list.json, not appended", "O", 3),
+    ("SH22", "main/shopping.py", "Shopping.construct_shopping_list_tree_display", "QTreeWidget with 2 columns (Category, Produce) built from shopping_list dict with parent/child items", "O", 15),
+    ("SH23", "main/shopping.py", "Shopping.construct_shopping_list_tree_display", "shopping_tree.expandAll() called after build to show all items without manual expansion", "O", 1),
+    ("SH24", "main/shopping.py", "Shopping.refresh_shopping_list_tree_view", "removeWidget + construct + insertWidget(1,...) pattern to replace tree in existing layout without full rebuild", "D", 5),
+    ("SH25", "main/shopping.py", "Shopping.shopping_tab_layout",  "addStretch() calls between section group-boxes in shopping_inputs_layout to space them evenly", "O", 3),
+    ("SH26", "main/shopping.py", "Shopping.shopping_tab_layout",  "QHBoxLayout splitting inputs column (left) from shopping list tree (right)", "O", 8),
 ]
 
+
 BORDERLINE_UNITS = {
-    "M6":  ("G", "D"),
-    "D4":  ("G", "P"),
-    "BB4": ("G", "D"),
-    "BB8": ("D", "G"),
-    "BB11":("D", "G"),
-    "BU5": ("G", "P"),
-    "BU15":("G", "P"),
-    "BU16":("G", "D"),
-    "BU17":("G", "D"),
-    "BU19":("P", "G"),
-    "SH6": ("G", "P"),
-    "SH8": ("G", "P"),
-    "SH9": ("D", "G"),
+    # MN1: from-import fix is verbatim from conversation answer; however it is a
+    # single import line — could be considered O (trivial stdlib knowledge).
+    "MN1": ("D", "O"),
+
+    # MN4: tab stylesheet structure matches conversation example closely in
+    # selector names and CSS properties, but colours differ; could be G.
+    "MN4": ("G", "D"),
+
+    # DI10: itertools.count(1) loop was not explicitly discussed in the
+    # conversation — only QFileSystemModel sorting was discussed.  Could be O.
+    "DI10": ("O", "G"),
+
+    # BU10: itemClicked toggling setExpanded(not isExpanded) is identified in
+    # the conversation analysis as "near-exact from tree structure answer";
+    # could be D rather than G.
+    "BU10": ("G", "D"),
+
+    # BU23: QScrollArea pattern with container widget was given as corrected
+    # code in the conversation; could be D rather than G.
+    "BU23": ("G", "D"),
+
+    # BU25/BU26: setParent(None) + list.clear() pattern was given explicitly in
+    # conversation; very close to D.
+    "BU25": ("G", "D"),
+    "BU26": ("G", "D"),
+
+    # BU33: insertWidget(0,...) alternative was discussed but not adopted
+    # verbatim (committed code still uses setupmainlayoutbudgettab path);
+    # could be O since that specific pattern was not used.
+    "BU33": ("G", "O"),
+
+    # BB8: locale().toDouble was given as a complete code snippet in the
+    # conversation; structural match is very high — could be D.
+    "BB8": ("G", "D"),
+
+    # BB11: duck-typed parent.spendings assignment is near-verbatim from the
+    # circular-import fix answer; labelled D, but author removed isinstance and
+    # left commented-out lines — could argue G.
+    "BB11": ("D", "G"),
+
+    # BB15/BB17: same duck-typing pattern extended to Box_income and
+    # Box_brutto_income by the author — pattern was shown for Box_spendings only,
+    # so extension could be O rather than D.
+    "BB15": ("D", "G"),
+    "BB17": ("D", "G"),
+
+    # SH12: QCompleter with CaseInsensitive was not explicitly discussed in the
+    # conversation; could be O.
+    "SH12": ("O", "G"),
+
+    # SH24: refresh pattern (removeWidget + insertWidget) matches the
+    # conversation's "safer pattern for refresh" almost verbatim; could be D.
+    "SH24": ("D", "G"),
+
+    # BP6: pg.AxisItem with setTicks for string labels was not covered in the
+    # conversation; could be O.
+    "BP6": ("O", "G"),
 }
 
 # ── SCORING ENGINE ─────────────────────────────────────────────────────────────
@@ -299,7 +420,7 @@ def generate_markdown(baseline_buckets, baseline_CIS, mc_stats, n_runs, seed):
     commit_s  = commit[:12]
     total_l   = AUDIT_METADATA["total_source_lines"]
     n_units   = len(UNITS)
-    audit_date = datetime.now().strftime("%Y-%m-%d")
+    audit_date = AUDIT_METADATA.get("Audit date", datetime.now().strftime("%Y-%m-%d"))
 
     lc = label_counts()
     total_u = n_units
@@ -385,11 +506,10 @@ appropriate single measure — is **{CIS['mean']:.1f}% ± {CIS['std']:.1f}%** \
 
     # ── file/unit summary table ────────────────────────────────────────────────
     file_list = []
-    file_lines = {"main.py": 55, "diary.py": 90, "budget_boxes.py": 120,
-                  "budget.py": 382, "shopping.py": 200}
-    for fname in ["main.py", "diary.py", "budget_boxes.py", "budget.py", "shopping.py"]:
-        u_count = sum(1 for u in UNITS if u[1] == fname)
-        file_list.append(f"| `main/{fname}` | {file_lines.get(fname, '—')} | {u_count} |")
+    file_lines = {f: n for f, n in AUDIT_METADATA["audited_files_line_count"]}
+    for fpath in AUDIT_METADATA["audited_files"]:
+        u_count = sum(1 for u in UNITS if u[1] == fpath)
+        file_list.append(f"| `{fpath}` | {file_lines.get(fpath, '—')} | {u_count} |")
     files_table = "\n".join(file_list)
 
     # ── label distribution table ───────────────────────────────────────────────
@@ -399,16 +519,14 @@ appropriate single measure — is **{CIS['mean']:.1f}% ± {CIS['std']:.1f}%** \
 
     # ── concept unit tables per file ──────────────────────────────────────────
     unit_tables = ""
-    file_headers = {
-        "main.py":        "### main.py",
-        "diary.py":       "### diary.py",
-        "budget_boxes.py":"### budget_boxes.py",
-        "budget.py":      "### budget.py",
-        "shopping.py":    "### shopping.py",
-    }
-    for fname in ["main.py", "diary.py", "budget_boxes.py", "budget.py", "shopping.py"]:
-        unit_tables += f"\n{file_headers[fname]}\n\n{_units_table_for_file(fname)}\n"
 
+    seen = set()
+    ordered_files = [
+        u[1] for u in UNITS
+        if not (u[1] in seen or seen.add(u[1]))]
+    for fpath in ordered_files:
+        header = f"### {os.path.basename(fpath)}"   # "main/diary.py" → "### diary.py"
+        unit_tables += f"\n{header}\n\n{_units_table_for_file(fpath)}\n"
     # ── MC table rows ──────────────────────────────────────────────────────────
     mc_rows = (
         f"| S_D — Line-match % | {SD['mean']:.2f}% | {SD['std']:.2f}% | "
@@ -430,7 +548,7 @@ appropriate single measure — is **{CIS['mean']:.1f}% ± {CIS['std']:.1f}%** \
 **Repository:** [{repo}](https://github.com/{repo})
 **Audit date:** {audit_date}
 **Commit ref:** `{commit}`
-**Total source lines audited:** {total_l} (across {len(file_lines)} files, excluding blank lines and comments)
+**Total source lines audited:** {total_l} (across {len(AUDIT_METADATA['audited_files'])} files, excluding blank lines and comments)
 **Concept units identified:** {n_units}
 **Monte Carlo simulation runs:** {n_runs:,}
 
