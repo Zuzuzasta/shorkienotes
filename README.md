@@ -15,6 +15,36 @@ budget_history.json
 
 shopping_list.json
 
+## Functionality
+
+### Budget tab:
+
+Budget tab allows user to keep track of their budgeting. The tab is divided into 4 sections: 
+
+- Data tree
+- Inputs
+- Summary
+- Graphing
+
+<img width="2557" height="1380" alt="image" src="https://github.com/user-attachments/assets/42c3b4c9-6b93-4a33-bb3f-4cfb9489cbb1" />
+
+The user can create own spending categories from the UI level (those will be stored in the budget_config.json file)
+
+Once filled in the amounts in the "Inputs" section, they can be individually submitted or submitted all at once when pressing "Calculate budgeting" button. Once calculated, the fields in "Summary" section will show calculated values:
+
+- Your total income
+- Amount put in savings
+- Remaining amount (so called "Fun money")
+- Effective tax rate
+- Total spendings (including savings)
+- Amount moved to the "Payments" account (account with no card that is used to link automatic payments)
+
+The can then be submitted to .json file and stored. It will then appear in the "Data tree" where it can be retrieved from by double clicking on the "Inputs" field of the relevant data entry, or on the singular spendings.
+
+<img width="562" height="627" alt="image" src="https://github.com/user-attachments/assets/35ee94a6-4ea6-4959-beb7-ac81c73d49e7" />
+
+The "Graphing" section shows a timeline of the budgeting.
+
 
 ***
 
