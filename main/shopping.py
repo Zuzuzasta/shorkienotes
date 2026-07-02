@@ -24,6 +24,9 @@ class Shopping(qtw.QWidget):
         # Make tree view
         self.construct_shopping_list_tree_display()
 
+        #Button "Generate HTML"
+        self.button_generate_list_html()
+
         #* Construct page
         self.shopping_tab_layout()
 
@@ -130,7 +133,7 @@ class Shopping(qtw.QWidget):
         self.add_produce_type_in_layout.addWidget(self.add_typed_produce_to_list_button)
 
     def apply_completer_to_line_edit(self):
-        produce_list = self.generate_lit_of_produce()
+        produce_list = self.generate_list_of_produce()
 
         produce_completer = qtw.QCompleter(produce_list)
         produce_completer.setCaseSensitivity(qtc.Qt.CaseSensitivity.CaseInsensitive)
@@ -147,7 +150,7 @@ class Shopping(qtw.QWidget):
         self.setup_for_choose_produce_combo()
         self.add_produce_combo_select_layout.insertWidget(1,self.choose_produce_combo)
 
-    def generate_lit_of_produce(self) -> list:
+    def generate_list_of_produce(self) -> list:
         self.open_and_load_product_database()
         produce_list: list = []
 
@@ -230,6 +233,10 @@ class Shopping(qtw.QWidget):
         self.construct_shopping_list_tree_display()
         self.shopping_list_layout.insertWidget(1,self.shopping_tree)
 
+
+    def button_generate_list_html(self):
+        pass
+    
     def generate_list_html(self):
         pass
 
