@@ -52,7 +52,7 @@ The "Graphing" section shows a timeline of the budgeting.
 
 During the project developement the Author has used a single chat thread within the Perplexity AI environment (Pro license, 2026, unspecified LLMs used). The model was asked to create methodology for verifying the percentage of original work by comparing this repository against the contents of the chat, run the audit multiple times, estimate error and prepare a documentation. The Author does not claim authorship of the auditing algorithm.
 
-__The exact copies of code were slightly above 2% with guided implementations below 14%. The final Conceptual Influence Score (CIS) - a metric determining how much of the project was influenced by AI, was calculated at 9.5%.__
+__The exact copies of code were slightly above 2% with guided implementations below 13%. The final Conceptual Influence Score (CIS) - a metric determining how much of the project was influenced by AI, was calculated at 8.9%.__
 
 The most recent audit results are shown below, section 5 is removed for editorial purposes but full dated audit reports are available in the AI_audit folder ([AI_audit](AI_audit/)).
 
@@ -60,16 +60,16 @@ The most recent audit results are shown below, section 5 is removed for editoria
 ***
 
 
-## Conceptual Influence Audit — shorkienotes
+# Conceptual Influence Audit — shorkienotes
 
-**Repository:** [Zuzuzasta/shorkienotes](https://github.com/Zuzuzasta/shorkienotes)  
-**Audit date:** 2026-04-13  
-**Commit ref:** `018b535d148dcbe39a5f8b27ab76ae512b232ce9`  
-**Total source lines audited:** 482 (across 5 files, excluding blank lines and comments)  
-**Concept units identified:** 64  
+**Repository:** [Zuzuzasta/shorkienotes](https://github.com/Zuzuzasta/shorkienotes)
+**Audit date:** 2026-07-01
+**Commit ref:** `7362ade2994413c34e11e70559f8d9753dbaa05b`
+**Total source lines audited:** 1317 (across 6 files, excluding blank lines and comments)
+**Concept units identified:** 114
 **Monte Carlo simulation runs:** 10,000
 
-***
+---
 
 ## 1. Purpose and Scope
 
@@ -80,7 +80,7 @@ This document provides a methodology and full quantitative audit measuring the d
 
 The methodology is designed to be reproducible and auditor-independent by fixing all subjective parameters before analysis begins, not after.
 
-***
+---
 
 ## 2. Methodology
 
@@ -105,7 +105,7 @@ After extraction, each concept unit is independently matched against the convers
 
 For each concept unit, the number of lines it governs is counted. Line weight is:
 
-$$ w_i = \frac{\ell_i}{\sum_j \ell_j} $$
+$$w_i = \frac{\ell_i}{\sum_j \ell_j}$$
 
 where $\ell_i$ is the line count of unit $i$. This anchors every concept unit to a countable, falsifiable quantity. A single-line fix cannot dominate the score regardless of conceptual importance.
 
@@ -113,16 +113,15 @@ where $\ell_i$ is the line count of unit $i$. This anchors every concept unit to
 
 Four weighted sums are computed:
 
-$$ S_D = \sum_{i \in D} w_i, \quad S_G = \sum_{i \in G} w_i, \quad S_P = \sum_{i \in P} w_i, \quad S_O = \sum_{i \in O} w_i $$
+$$S_D = \sum_{i \in D} w_i, \quad S_G = \sum_{i \in G} w_i, \quad S_P = \sum_{i \in P} w_i, \quad S_O = \sum_{i \in O} w_i$$
 
 These sum to 1 by construction. They represent the fraction of the codebase by line weight attributable to each origin.
 
 ### 2.5 Conceptual Influence Score (CIS)
 
-The CIS is the expected influence value of a randomly selected governed line of code.
-CIS is a single weighted sum composite:
+The CIS is the expected influence value of a randomly selected governed line of code. CIS is a single weighted sum composite:
 
-$$ \text{CIS} = 1.0 \cdot S_D + 0.5 \cdot S_G + 0.2 \cdot S_P + 0.0 \cdot S_O $$
+$$\text{CIS} = 1.0 \cdot S_D + 0.5 \cdot S_G + 0.2 \cdot S_P + 0.0 \cdot S_O$$
 
 The coefficients reflect how much implementation work was performed by the conversation versus the author:
 
@@ -137,42 +136,43 @@ The coefficients reflect how much implementation work was performed by the conve
 
 Two sources of measurement uncertainty are modelled:
 
-1. **Line-count perturbation:** each unit's line count is multiplied by a uniform random factor in [0.80, 1.20], simulating auditor disagreement on how many lines a concept "governs."
+1. **Line-count perturbation:** each unit's line count is multiplied by a uniform random factor in [0.8, 1.2], simulating auditor disagreement on how many lines a concept "governs."
 2. **Label uncertainty:** borderline units (those credibly classifiable under two adjacent labels) are identified in advance. Each borderline unit flips to its alternative label with probability 0.15 per run, simulating rater disagreement on origin.
 
-Ten thousand runs are executed. For each metric, the mean, standard deviation, 95% confidence interval, minimum, and maximum are reported.
+10,000 runs are executed. For each metric, the mean, standard deviation, 95% confidence interval, minimum, and maximum are reported.
 
-***
+---
 
 ## 3. Files and Line Counts
 
 | File | Approx. lines audited | Concept units |
 |------|-----------------------|---------------|
-| `main/main.py` | 55 | 8 |
-| `main/diary.py` | 90 | 12 |
-| `main/budget_boxes.py` | 120 | 11 |
-| `main/budget.py` | 382 | 23 |
-| `main/shopping.py` | 200 | 10 |
-| **Total** | **482** | **64** |
+| `main/main.py` | 67 | 8 |
+| `main/diary.py` | 126 | 15 |
+| `main/budget_boxes.py` | 172 | 17 |
+| `main/budget.py` | 566 | 34 |
+| `main/budget_plotting.py` | 135 | 14 |
+| `main/shopping.py` | 251 | 26 |
+| **Total** | **1317** | **114** |
 
-***
+---
 
 ## 4. Label Distribution
 
 | Label | Count | Fraction of units |
 |-------|-------|-------------------|
-| D (Direct) | 4 | 6.3% |
-| G (Guided) | 9 | 14.1% |
-| P (Prompted) | 2 | 3.1% |
-| O (Original) | 49 | 76.6% |
+| D (Direct) | 5 | 4.4% |
+| G (Guided) | 19 | 16.7% |
+| P (Prompted) | 0 | 0.0% |
+| O (Original) | 90 | 78.9% |
 
-***
+---
 
 ## 5. Complete Concept Unit Table
 
-This section was removed by the Author for editorial purposes.
+Contents of section 5 are removed for editorial purposes but full dated audit reports are available in the AI_audit folder ([AI_audit](AI_audit/)).
 
-***
+---
 
 ## 6. Baseline Audit Results
 
@@ -180,43 +180,43 @@ Computed from the deterministic baseline (no perturbation):
 
 | Metric | Score |
 |--------|-------|
-| S_D — Line-match % | 2.28% |
-| S_G — Guided % | 13.69% |
-| S_P — Prompted % | 1.45% |
-| S_O — Original % | 82.57% |
-| **CIS — Composite** | **9.42%** |
+| S_D — Line-match % | 2.29% |
+| S_G — Guided % | 12.54% |
+| S_P — Prompted % | 0.00% |
+| S_O — Original % | 85.17% |
+| **CIS — Composite** | **8.56%** |
 
-***
+---
 
 ## 7. Monte Carlo Results (10,000 runs)
 
 Sources of uncertainty modelled:
-- **Line-count noise:** ±20% uniform perturbation on each unit's line count per run.
-- **Label flips:** 13 borderline units identified; each flips to its alternative label with probability 0.15 per run.
+- **Line-count noise:** ±19% uniform perturbation on each unit's line count per run.
+- **Label flips:** 15 borderline units identified; each flips to its alternative label with probability 0.15 per run.
 
 | Metric | Mean | ±1σ | 95% CI | Min | Max |
 |--------|------|-----|--------|-----|-----|
-| S_D — Line-match % | 2.34% | 0.69% | [1.02%, 3.77%] | 0.20% | 5.02% |
-| S_G — Guided % | 12.19% | 2.57% | [6.08%, 15.68%] | 2.45% | 18.14% |
-| S_P — Prompted % | 2.91% | 2.42% | [0.21%, 9.00%] | 0.20% | 13.07% |
-| S_O — Original % | 82.56% | 0.75% | [81.12%, 83.99%] | 80.04% | 84.91% |
-| **CIS — Composite** | **9.02%** | **0.88%** | **[7.02%, 10.44%]** | **5.44%** | **11.75%** |
+| S_D — Line-match % | 2.72% | 1.05% | [1.21%, 5.19%] | 0.31% | 7.19% |
+| S_G — Guided % | 12.30% | 1.26% | [9.56%, 14.62%] | 7.54% | 16.44% |
+| S_P — Prompted % | 0.00% | 0.00% | [0.00%, 0.00%] | 0.00% | 0.00% |
+| S_O — Original % | 84.98% | 0.78% | [83.28%, 86.40%] | 81.64% | 87.61% |
+| **CIS — Composite** | **8.87%** | **0.68%** | **[7.75%, 10.36%]** | **6.91%** | **11.79%** |
 
-***
+---
 
 ## 8. Interpretation
 
-**Original authorship is robust.** Across all 10,000 simulated audits, the original fraction S_O never dropped below 80%, with a mean of 82.56% ± 0.75%. This figure is insensitive to both line-count uncertainty and label reclassification, making it the most reliable single number in the audit.
+**Original authorship is highly robust — the standard deviation is below 1 percentage point.** Across all 10,000 simulated audits, the original fraction S_O never dropped below 81.64%, with a mean of 84.98% ± 0.78%. This figure is insensitive to both line-count uncertainty and label reclassification, making it the most reliable single number in the audit.
 
-**The line-match fraction is small and narrow.** S_D has a mean of 2.34% with a 95% CI of [1.02%, 3.77%]. Even in the most aggressive simulation run, verbatim-match code never exceeded 5% of the codebase. The four Direct units (M1, BB8, BB11, SH9) account for only 11 lines across a 482-line codebase.
+**The line-match fraction is small and narrow.** S_D has a mean of 2.72% with a 95% CI of [1.21%, 5.19%]. Even in the most aggressive simulation run, verbatim-match code never exceeded 7.19% of the codebase. The 5 Direct unit(s) (MN1, BB11, BB15, BB17, SH24) account for only 15 lines across a 1317-line codebase.
 
-**Guided influence is the dominant AI contribution.** S_G at 12.19% reflects the QTreeWidget hierarchy, the duck-typing pattern description, and the layout refresh approach — all cases where the conversation provided the architectural direction but the author wrote every line of the implementation.
+**Guided influence is the dominant AI contribution.** S_G at 12.30% reflects cases where the conversation provided architectural direction but the author wrote every line of the implementation. Its 95% CI is [9.56%, 14.62%].
 
-**The CIS of ~9% is the most honest single-number answer.** It integrates all four origins with appropriate weighting, and its 95% CI of [7.02%, 10.44%] means the true figure is unlikely to be below 7% or above 11% under any plausible audit disagreement.
+**The CIS of ~8.9% is the most honest single-number answer.** It integrates all four origins with appropriate weighting, and its 95% CI of [7.75%, 10.36%] means the true figure is unlikely to be below 8% or above 10% under any plausible audit disagreement.
 
-**S_P variance is high.** The prompted category has the widest CI ([0.21%, 9.00%]) because its two units (M3 and BU19) are the most ambiguous: a path-resolution issue and a layout-refresh pattern, both of which could reasonably be reclassified as G if the conversation's contribution is judged more substantive.
+S_P has a relatively narrow confidence interval ([0.00%, 0.00%]), indicating good auditor agreement on prompted units.
 
-***
+---
 
 ## 9. Limitations
 
@@ -225,8 +225,8 @@ Sources of uncertainty modelled:
 - **Semantic overlap is not modelled.** Some Original units use PyQt6 patterns that were discussed generically in the conversation but in a different context. These were conservatively labelled O.
 - **Single auditor.** Inter-rater reliability was not tested with a second human auditor; borderline unit uncertainty is approximated by the Monte Carlo label-flip model instead.
 
-***
+---
 
 ## 10. Summary
 
-The codebase of `shorkienotes` at commit `018b535d` is overwhelmingly original work. The AI conversation contributed approximately **2–3% of lines verbatim**, guided the architecture of a further **12% of lines**, and prompted debugging solutions for roughly **1–3% of lines**. The Conceptual Influence Score — the most appropriate single measure — is **9.0% ± 0.9%** (95% CI: 7.0%–10.4%).
+The codebase of `shorkienotes` at commit `7362ade29944` is overwhelmingly original work. The AI conversation contributed approximately 3–5% of lines verbatim, guided the architecture of a further 12% of lines (95% CI: [9.6%, 14.6%]), and prompted debugging solutions for roughly 0–0% of lines. The Conceptual Influence Score — the most appropriate single measure — is **8.9% ± 0.7%** (95% CI: 7.7%–10.4%).
